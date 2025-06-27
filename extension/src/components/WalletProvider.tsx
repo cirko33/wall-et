@@ -18,7 +18,15 @@ interface WalletContextType {
   clearWallet: () => Promise<void>;
   setPassword: (password: string) => Promise<void>;
   unlockWallet: (password: string) => Promise<boolean>;
-  lockWallet: () => void;
+  signTransaction: (to: string, amount: string, gasPrice?: string) => Promise<{
+    signedTx: string;
+    txHash: string;
+    rawTx: any;
+  }>;
+  sendTransaction: (to: string, amount: string, gasPrice?: string) => Promise<{
+    txHash: string;
+    receipt: any;
+  }>;
 }
 
 const WalletContext = createContext<WalletContextType | undefined>(undefined);
@@ -40,6 +48,11 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
   const [address, setAddress] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isPasswordSet, setIsPasswordSet] = useState<boolean>(false);
+
+  // Initialize Infura provider
+  const provider = new ethers.providers.JsonRpcProvider(
+    'https://sepolia.infura.io/v3/7a796da878ac4152a6b3bfcb4fc794cb'
+  );
 
   useEffect(() => {
     checkPasswordStatus();
@@ -74,11 +87,14 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
       setIsLoading(true);
       const newWallet = ethers.Wallet.createRandom();
 
+      // Connect wallet to Infura provider
+      const connectedWallet = newWallet.connect(provider);
+
       // Encrypt and store the private key
       await storeEncryptedWallet(newWallet.privateKey, password);
 
-      setWallet(newWallet);
-      setAddress(newWallet.address);
+      setWallet(connectedWallet);
+      setAddress(connectedWallet.address);
       setPassword(password);
       setIsPasswordSet(true);
     } catch (error) {
@@ -101,12 +117,15 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
       }
 
       const walletInstance = new ethers.Wallet(privateKey);
+      
+      // Connect wallet to Infura provider
+      const connectedWallet = walletInstance.connect(provider);
 
       // Encrypt and store the private key
       await storeEncryptedWallet(privateKey, password);
 
-      setWallet(walletInstance);
-      setAddress(walletInstance.address);
+      setWallet(connectedWallet);
+      setAddress(connectedWallet.address);
       setIsPasswordSet(true);
     } catch (error) {
       console.error("Error importing wallet:", error);
@@ -146,8 +165,12 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
       }
 
       const walletInstance = new ethers.Wallet(privateKey);
-      setWallet(walletInstance);
-      setAddress(walletInstance.address);
+      
+      // Connect wallet to Infura provider
+      const connectedWallet = walletInstance.connect(provider);
+      
+      setWallet(connectedWallet);
+      setAddress(connectedWallet.address);
       return true;
     } catch (error) {
       console.error("Error unlocking wallet:", error);
@@ -248,7 +271,105 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
     clearWallet,
     setPassword,
     unlockWallet,
-    lockWallet,
+    signTransaction: async (to: string, amount: string, gasPrice?: string) => {
+      if (!wallet) {
+        throw new Error("No wallet loaded");
+      }
+
+      try {
+        // Validate recipient address
+        if (!ethers.utils.isAddress(to)) {
+          throw new Error("Invalid recipient address");
+        }
+
+        // Parse amount to Wei
+        const amountWei = ethers.utils.parseEther(amount);
+
+        // Get current nonce
+        const nonce = await wallet.getTransactionCount();
+
+        // Get current gas price if not provided
+        let gasPriceWei: ethers.BigNumber;
+        if (gasPrice) {
+          gasPriceWei = ethers.utils.parseUnits(gasPrice, 'gwei');
+        } else {
+          // Use a default gas price for Sepolia (20 gwei)
+          gasPriceWei = ethers.utils.parseUnits('20', 'gwei');
+        }
+
+        // Create transaction object
+        const tx = {
+          to: to,
+          value: amountWei,
+          gasPrice: gasPriceWei,
+          gasLimit: 21000, // Standard gas limit for ETH transfer
+          nonce: nonce,
+          chainId: 11155111 // Sepolia chain ID
+        };
+
+        // Sign the transaction
+        const signedTx = await wallet.signTransaction(tx);
+        
+        // Calculate transaction hash
+        const txHash = ethers.utils.keccak256(signedTx);
+
+        return {
+          signedTx: signedTx,
+          txHash: txHash,
+          rawTx: tx
+        };
+      } catch (error) {
+        console.error("Error signing transaction:", error);
+        throw error;
+      }
+    },
+    sendTransaction: async (to: string, amount: string, gasPrice?: string) => {
+      if (!wallet) {
+        throw new Error("No wallet loaded");
+      }
+
+      try {
+        // Validate recipient address
+        if (!ethers.utils.isAddress(to)) {
+          throw new Error("Invalid recipient address");
+        }
+
+        // Parse amount to Wei
+        const amountWei = ethers.utils.parseEther(amount);
+
+        // Get current gas price if not provided
+        let gasPriceWei: ethers.BigNumber;
+        if (gasPrice) {
+          gasPriceWei = ethers.utils.parseUnits(gasPrice, 'gwei');
+        } else {
+          // Use a default gas price for Sepolia (20 gwei)
+          gasPriceWei = ethers.utils.parseUnits('20', 'gwei');
+        }
+
+        // Create transaction object
+        const tx = {
+          to: to,
+          value: amountWei,
+          gasPrice: gasPriceWei,
+          gasLimit: 21000, // Standard gas limit for ETH transfer
+          chainId: 11155111 // Sepolia chain ID
+        };
+
+        // Send the transaction directly (ethers will handle signing and broadcasting)
+        const transaction = await wallet.sendTransaction(tx);
+        
+        // Wait for the transaction to be mined
+        const receipt = await transaction.wait();
+
+        return {
+          txHash: transaction.hash,
+          receipt: receipt
+        };
+      } catch (error) {
+        console.error("Error sending transaction:", error);
+        throw error;
+      }
+    },
   };
 
   return (
