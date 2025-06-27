@@ -1,0 +1,338 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #333;
+    min-height: 100vh;
+    min-width: 500px;
+}
+
+.app {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.container {
+    width: 500px;
+    min-width: 500px;
+    min-height: 500px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+}
+
+.header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px;
+    text-align: center;
+    position: relative;
+}
+
+.header h1 {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.network-badge {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    display: inline-block;
+}
+
+.screen {
+    padding: 24px;
+    min-height: 400px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.setup-content, .import-content, .generated-content, .wallet-content, .send-content {
+    text-align: center;
+}
+
+.setup-content h2, .import-content h2, .generated-content h2, .send-content h2 {
+    font-size: 20px;
+    margin-bottom: 16px;
+    color: #333;
+}
+
+.setup-content p, .import-content p, .generated-content p {
+    color: #666;
+    margin-bottom: 24px;
+    line-height: 1.5;
+}
+
+.setup-options {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    text-decoration: none;
+}
+
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.btn-secondary {
+    background: #f8f9fa;
+    color: #495057;
+    border: 1px solid #dee2e6;
+}
+
+.btn-secondary:hover:not(:disabled) {
+    background: #e9ecef;
+    border-color: #adb5bd;
+}
+
+.btn-icon {
+    padding: 8px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    border-radius: 4px;
+    transition: background 0.2s ease;
+}
+
+.btn-icon:hover {
+    background: #f8f9fa;
+}
+
+.input-group {
+    position: relative;
+    margin-bottom: 16px;
+}
+
+.input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: border-color 0.2s ease;
+    background: white;
+}
+
+.input:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.input-group .btn-icon {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.button-group {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-top: 24px;
+}
+
+.warning {
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    color: #856404;
+    padding: 12px;
+    border-radius: 8px;
+    margin: 16px 0;
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.private-key-display {
+    margin: 20px 0;
+}
+
+.address-display {
+    margin: 20px 0;
+}
+
+.address-display label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #495057;
+}
+
+.wallet-header {
+    margin-bottom: 24px;
+}
+
+.address-section, .balance-section {
+    margin-bottom: 16px;
+}
+
+.address-section label, .balance-section label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #495057;
+    font-size: 14px;
+}
+
+.balance {
+    font-size: 24px;
+    font-weight: 600;
+    color: #28a745;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.currency {
+    font-size: 14px;
+    color: #6c757d;
+}
+
+.wallet-actions {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.wallet-actions .btn {
+    flex: 1;
+}
+
+.transaction-history h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    color: #495057;
+}
+
+.transactions-list {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 16px;
+    min-height: 100px;
+}
+
+.no-transactions {
+    color: #6c757d;
+    text-align: center;
+    font-style: italic;
+}
+
+.form-group {
+    margin-bottom: 16px;
+    text-align: left;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #495057;
+    font-size: 14px;
+}
+
+.transaction-summary {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 16px;
+    margin: 20px 0;
+}
+
+.summary-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.summary-item:last-child {
+    margin-bottom: 0;
+    font-weight: 600;
+    border-top: 1px solid #dee2e6;
+    padding-top: 8px;
+}
+
+.loading-content {
+    text-align: center;
+    padding: 40px 20px;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 16px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.loading-content p {
+    color: #6c757d;
+    font-size: 14px;
+}
+
+.icon {
+    font-size: 16px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 520px) {
+    .container {
+        width: 100%;
+        min-width: auto;
+        border-radius: 0;
+    }
+    
+    .button-group {
+        flex-direction: column;
+    }
+    
+    .wallet-actions {
+        flex-direction: column;
+    }
+} 

@@ -1,0 +1,26 @@
+{
+  "manifest_version": 3,
+  "name": "Sepolia ETH Wallet",
+  "version": "1.0.0",
+  "description": "A secure Ethereum Sepolia testnet wallet extension",
+  "permissions": ["storage", "activeTab"],
+  "action": {
+    "default_popup": "dist/popup.html",
+    "default_title": "Sepolia ETH Wallet",
+    "default_icon": {
+      "16": "icons/icon.svg",
+      "32": "icons/icon.svg",
+      "48": "icons/icon.svg",
+      "128": "icons/icon.svg"
+    }
+  },
+  "background": {
+    "service_worker": "dist/background.js"
+  },
+  "icons": {
+    "16": "icons/icon.svg",
+    "32": "icons/icon.svg",
+    "48": "icons/icon.svg",
+    "128": "icons/icon.svg"
+  }
+}
