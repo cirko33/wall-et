@@ -17,16 +17,26 @@ interface WalletContextType {
   importWallet: (privateKey: string, password: string) => Promise<void>;
   clearWallet: () => Promise<void>;
   setPassword: (password: string) => Promise<void>;
+  lockWallet: () => void;
   unlockWallet: (password: string) => Promise<boolean>;
-  signTransaction: (to: string, amount: string, gasPrice?: string) => Promise<{
+  signTransaction: (
+    to: string,
+    amount: string,
+    gasPrice?: string
+  ) => Promise<{
     signedTx: string;
     txHash: string;
     rawTx: any;
   }>;
-  sendTransaction: (to: string, amount: string, gasPrice?: string) => Promise<{
+  sendTransaction: (
+    to: string,
+    amount: string,
+    gasPrice?: string
+  ) => Promise<{
     txHash: string;
     receipt: any;
   }>;
+  getBalance: () => Promise<string>;
 }
 
 const WalletContext = createContext<WalletContextType | undefined>(undefined);
@@ -51,24 +61,55 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
 
   // Initialize Infura provider
   const provider = new ethers.providers.JsonRpcProvider(
-    'https://sepolia.infura.io/v3/7a796da878ac4152a6b3bfcb4fc794cb'
+    "https://sepolia.infura.io/v3/7a796da878ac4152a6b3bfcb4fc794cb"
   );
 
   useEffect(() => {
-    checkPasswordStatus();
+    (async () => {
+      // Check if wallet is unlocked and restore if so
+      setIsLoading(true);
+      try {
+        let isUnlocked = false;
+        if (typeof chrome !== "undefined" && chrome.storage) {
+          const result = await chrome.storage.local.get(["isUnlocked"]);
+          isUnlocked = !!result.isUnlocked;
+        } else {
+          isUnlocked = localStorage.getItem("is_unlocked") === "true";
+        }
+        const stored = await getStoredWallet();
+        const passwordHash = await getStoredPasswordHash();
+        setIsPasswordSet(!!stored && !!passwordHash);
+        if (isUnlocked && stored && passwordHash) {
+          // Try to restore wallet without password
+          // Decrypt with a dummy password, since we don't have it, but we can store the private key unencrypted if needed
+          // Instead, store the private key in memory when unlocked
+          // We'll need to store the decrypted private key in storage when unlocked
+          let decryptedPrivateKey = null;
+          if (typeof chrome !== "undefined" && chrome.storage) {
+            const result = await chrome.storage.local.get([
+              "decryptedPrivateKey",
+            ]);
+            decryptedPrivateKey = result.decryptedPrivateKey;
+          } else {
+            decryptedPrivateKey = localStorage.getItem("decrypted_private_key");
+          }
+          if (
+            decryptedPrivateKey &&
+            /^0x?[0-9a-fA-F]{64}$/.test(decryptedPrivateKey)
+          ) {
+            const walletInstance = new ethers.Wallet(decryptedPrivateKey);
+            const connectedWallet = walletInstance.connect(provider);
+            setWallet(connectedWallet);
+            setAddress(connectedWallet.address);
+          }
+        }
+      } catch (error) {
+        console.error("Error checking password status:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    })();
   }, []);
-
-  const checkPasswordStatus = async () => {
-    try {
-      const stored = await getStoredWallet();
-      const passwordHash = await getStoredPasswordHash();
-      setIsPasswordSet(!!stored && !!passwordHash);
-    } catch (error) {
-      console.error("Error checking password status:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const encryptPrivateKey = (privateKey: string, password: string): string => {
     return crypto.AES.encrypt(privateKey, password).toString();
@@ -117,7 +158,7 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
       }
 
       const walletInstance = new ethers.Wallet(privateKey);
-      
+
       // Connect wallet to Infura provider
       const connectedWallet = walletInstance.connect(provider);
 
@@ -157,7 +198,6 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
         password
       );
 
-      console.log("Decrypted private key:", privateKey);
       // Validate the decrypted private key
       if (!/^0x?[0-9a-fA-F]{64}$/.test(privateKey)) {
         console.error("Invalid private key format after decryption");
@@ -165,12 +205,19 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
       }
 
       const walletInstance = new ethers.Wallet(privateKey);
-      
-      // Connect wallet to Infura provider
       const connectedWallet = walletInstance.connect(provider);
-      
       setWallet(connectedWallet);
       setAddress(connectedWallet.address);
+      // Persist unlocked state and decrypted private key
+      if (typeof chrome !== "undefined" && chrome.storage) {
+        await chrome.storage.local.set({
+          isUnlocked: true,
+          decryptedPrivateKey: privateKey,
+        });
+      } else {
+        localStorage.setItem("is_unlocked", "true");
+        localStorage.setItem("decrypted_private_key", privateKey);
+      }
       return true;
     } catch (error) {
       console.error("Error unlocking wallet:", error);
@@ -191,7 +238,19 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
 
   const clearWallet = async () => {
     try {
-      await chrome.storage.local.remove(["wallet", "passwordHash"]);
+      if (typeof chrome !== "undefined" && chrome.storage) {
+        await chrome.storage.local.remove([
+          "wallet",
+          "passwordHash",
+          "isUnlocked",
+          "decryptedPrivateKey",
+        ]);
+      } else {
+        localStorage.removeItem("sepolia_wallet");
+        localStorage.removeItem("password_hash");
+        localStorage.removeItem("is_unlocked");
+        localStorage.removeItem("decrypted_private_key");
+      }
       setWallet(null);
       setAddress("");
       setIsPasswordSet(false);
@@ -258,7 +317,133 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
   const lockWallet = () => {
     setWallet(null);
     setAddress("");
-    // Do not clear password hash or wallet from storage, just lock in memory
+    // Remove unlocked state and decrypted private key
+    if (typeof chrome !== "undefined" && chrome.storage) {
+      chrome.storage.local.set({
+        isUnlocked: false,
+        decryptedPrivateKey: null,
+      });
+    } else {
+      localStorage.setItem("is_unlocked", "false");
+      localStorage.removeItem("decrypted_private_key");
+    }
+  };
+
+  const signTransaction = async (
+    to: string,
+    amount: string,
+    gasPrice?: string
+  ) => {
+    if (!wallet) {
+      throw new Error("No wallet loaded");
+    }
+
+    try {
+      // Validate recipient address
+      if (!ethers.utils.isAddress(to)) {
+        throw new Error("Invalid recipient address");
+      }
+
+      // Parse amount to Wei
+      const amountWei = ethers.utils.parseEther(amount);
+
+      // Get current nonce
+      const nonce = await wallet.getTransactionCount();
+
+      // Get current gas price if not provided
+      let gasPriceWei: ethers.BigNumber;
+      if (gasPrice) {
+        gasPriceWei = ethers.utils.parseUnits(gasPrice, "gwei");
+      } else {
+        // Use a default gas price for Sepolia (20 gwei)
+        gasPriceWei = ethers.utils.parseUnits("20", "gwei");
+      }
+
+      // Create transaction object
+      const tx = {
+        to: to,
+        value: amountWei,
+        gasPrice: gasPriceWei,
+        gasLimit: 21000, // Standard gas limit for ETH transfer
+        nonce: nonce,
+        chainId: 11155111, // Sepolia chain ID
+      };
+
+      // Sign the transaction
+      const signedTx = await wallet.signTransaction(tx);
+
+      // Calculate transaction hash
+      const txHash = ethers.utils.keccak256(signedTx);
+
+      return {
+        signedTx: signedTx,
+        txHash: txHash,
+        rawTx: tx,
+      };
+    } catch (error) {
+      console.error("Error signing transaction:", error);
+      throw error;
+    }
+  };
+
+  const sendTransaction = async (
+    to: string,
+    amount: string,
+    gasPrice?: string
+  ) => {
+    if (!wallet) {
+      throw new Error("No wallet loaded");
+    }
+
+    try {
+      // Validate recipient address
+      if (!ethers.utils.isAddress(to)) {
+        throw new Error("Invalid recipient address");
+      }
+
+      // Parse amount to Wei
+      const amountWei = ethers.utils.parseEther(amount);
+
+      // Get current gas price if not provided
+      let gasPriceWei: ethers.BigNumber;
+      if (gasPrice) {
+        gasPriceWei = ethers.utils.parseUnits(gasPrice, "gwei");
+      } else {
+        // Use a default gas price for Sepolia (20 gwei)
+        gasPriceWei = ethers.utils.parseUnits("20", "gwei");
+      }
+
+      // Create transaction object
+      const tx = {
+        to: to,
+        value: amountWei,
+        gasPrice: gasPriceWei,
+        gasLimit: 21000, // Standard gas limit for ETH transfer
+        chainId: 11155111, // Sepolia chain ID
+      };
+
+      // Send the transaction directly (ethers will handle signing and broadcasting)
+      const transaction = await wallet.sendTransaction(tx);
+
+      // Wait for the transaction to be mined
+      const receipt = await transaction.wait();
+
+      return {
+        txHash: transaction.hash,
+        receipt: receipt,
+      };
+    } catch (error) {
+      console.error("Error sending transaction:", error);
+      throw error;
+    }
+  };
+
+  const getBalance = async () => {
+    if (!wallet) {
+      throw new Error("No wallet loaded");
+    }
+    const balance = await wallet.getBalance();
+    return ethers.utils.formatEther(balance);
   };
 
   const value: WalletContextType = {
@@ -271,105 +456,10 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
     clearWallet,
     setPassword,
     unlockWallet,
-    signTransaction: async (to: string, amount: string, gasPrice?: string) => {
-      if (!wallet) {
-        throw new Error("No wallet loaded");
-      }
-
-      try {
-        // Validate recipient address
-        if (!ethers.utils.isAddress(to)) {
-          throw new Error("Invalid recipient address");
-        }
-
-        // Parse amount to Wei
-        const amountWei = ethers.utils.parseEther(amount);
-
-        // Get current nonce
-        const nonce = await wallet.getTransactionCount();
-
-        // Get current gas price if not provided
-        let gasPriceWei: ethers.BigNumber;
-        if (gasPrice) {
-          gasPriceWei = ethers.utils.parseUnits(gasPrice, 'gwei');
-        } else {
-          // Use a default gas price for Sepolia (20 gwei)
-          gasPriceWei = ethers.utils.parseUnits('20', 'gwei');
-        }
-
-        // Create transaction object
-        const tx = {
-          to: to,
-          value: amountWei,
-          gasPrice: gasPriceWei,
-          gasLimit: 21000, // Standard gas limit for ETH transfer
-          nonce: nonce,
-          chainId: 11155111 // Sepolia chain ID
-        };
-
-        // Sign the transaction
-        const signedTx = await wallet.signTransaction(tx);
-        
-        // Calculate transaction hash
-        const txHash = ethers.utils.keccak256(signedTx);
-
-        return {
-          signedTx: signedTx,
-          txHash: txHash,
-          rawTx: tx
-        };
-      } catch (error) {
-        console.error("Error signing transaction:", error);
-        throw error;
-      }
-    },
-    sendTransaction: async (to: string, amount: string, gasPrice?: string) => {
-      if (!wallet) {
-        throw new Error("No wallet loaded");
-      }
-
-      try {
-        // Validate recipient address
-        if (!ethers.utils.isAddress(to)) {
-          throw new Error("Invalid recipient address");
-        }
-
-        // Parse amount to Wei
-        const amountWei = ethers.utils.parseEther(amount);
-
-        // Get current gas price if not provided
-        let gasPriceWei: ethers.BigNumber;
-        if (gasPrice) {
-          gasPriceWei = ethers.utils.parseUnits(gasPrice, 'gwei');
-        } else {
-          // Use a default gas price for Sepolia (20 gwei)
-          gasPriceWei = ethers.utils.parseUnits('20', 'gwei');
-        }
-
-        // Create transaction object
-        const tx = {
-          to: to,
-          value: amountWei,
-          gasPrice: gasPriceWei,
-          gasLimit: 21000, // Standard gas limit for ETH transfer
-          chainId: 11155111 // Sepolia chain ID
-        };
-
-        // Send the transaction directly (ethers will handle signing and broadcasting)
-        const transaction = await wallet.sendTransaction(tx);
-        
-        // Wait for the transaction to be mined
-        const receipt = await transaction.wait();
-
-        return {
-          txHash: transaction.hash,
-          receipt: receipt
-        };
-      } catch (error) {
-        console.error("Error sending transaction:", error);
-        throw error;
-      }
-    },
+    lockWallet,
+    signTransaction,
+    sendTransaction,
+    getBalance,
   };
 
   return (

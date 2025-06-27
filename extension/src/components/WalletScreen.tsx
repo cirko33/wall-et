@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useWallet } from './WalletProvider';
+import React, { useState, useEffect } from "react";
+import { useWallet } from "./WalletProvider";
 
 interface WalletScreenProps {
   onSendEth: () => void;
@@ -7,26 +7,59 @@ interface WalletScreenProps {
   onViewPrivateKey: () => void;
 }
 
-const WalletScreen: React.FC<WalletScreenProps> = ({ onSendEth, onCreateNewWallet, onViewPrivateKey }) => {
-  const { wallet, address, clearWallet } = useWallet();
+const WalletScreen: React.FC<WalletScreenProps> = ({
+  onSendEth,
+  onCreateNewWallet,
+  onViewPrivateKey,
+}) => {
+  const { wallet, address, clearWallet, getBalance } = useWallet();
+  const [balance, setBalance] = useState<string>("");
+  const [loadingBalance, setLoadingBalance] = useState<boolean>(false);
+
+  useEffect(() => {
+    const fetchBalance = async () => {
+      if (wallet) {
+        setLoadingBalance(true);
+        try {
+          const bal = await getBalance();
+          setBalance(bal);
+        } catch (e) {
+          setBalance("Error");
+        } finally {
+          setLoadingBalance(false);
+        }
+      } else {
+        setBalance("");
+      }
+    };
+    fetchBalance();
+  }, [wallet, getBalance]);
 
   const copyToClipboard = async (text: string) => {
     try {
       await navigator.clipboard.writeText(text);
-      alert('Copied to clipboard!');
+      alert("Copied to clipboard!");
     } catch (error) {
-      console.error('Failed to copy:', error);
+      console.error("Failed to copy:", error);
     }
   };
 
   const handleClearWallet = async () => {
-    if (confirm('Are you sure you want to clear this wallet? This action cannot be undone.')) {
+    if (
+      confirm(
+        "Are you sure you want to clear this wallet? This action cannot be undone."
+      )
+    ) {
       await clearWallet();
     }
   };
 
   const handleCreateNewWallet = async () => {
-    if (confirm('This will clear your current wallet and create a new one. Are you sure?')) {
+    if (
+      confirm(
+        "This will clear your current wallet and create a new one. Are you sure?"
+      )
+    ) {
       await clearWallet();
       onCreateNewWallet();
     }
@@ -39,8 +72,15 @@ const WalletScreen: React.FC<WalletScreenProps> = ({ onSendEth, onCreateNewWalle
   return (
     <div className="screen">
       <div className="wallet-content">
-        <div className="wallet-header">
-          <h2>Your Wallet</h2>
+        <div className="balance-section" style={{ marginBottom: "1em" }}>
+          <div style={{ fontWeight: "bold", fontSize: "1.2em" }}>
+            Balance:{" "}
+            {loadingBalance
+              ? "Loading..."
+              : balance !== ""
+              ? `${balance} ETH`
+              : "--"}
+          </div>
         </div>
 
         <div className="address-section">
@@ -79,4 +119,4 @@ const WalletScreen: React.FC<WalletScreenProps> = ({ onSendEth, onCreateNewWalle
   );
 };
 
-export default WalletScreen; 
+export default WalletScreen;
