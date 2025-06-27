@@ -9,68 +9,7 @@ import LoadingScreen from "./LoadingScreen";
 import PasswordSetupScreen from "./PasswordSetupScreen";
 import PasswordUnlockScreen from "./PasswordUnlockScreen";
 import ViewPrivateKeyScreen from "./ViewPrivateKeyScreen";
-import wallETIcon from "../../icons/wall-et.png";
-
-const Navbar: React.FC<{
-  onLock?: () => void;
-  showLock?: boolean;
-  dark?: boolean;
-}> = ({ onLock, showLock = true, dark = false }) => (
-  <div
-    style={{
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "space-between",
-      height: 60,
-      padding: "0 16px",
-      background: dark ? "#2a2f40" : "#fff",
-      borderBottom: dark ? "1px solid #181a20" : "1px solid #eee",
-    }}
-  >
-    <img src={wallETIcon} alt="Wall-Et" style={{ width: 50, height: 50 }} />
-    {showLock && (
-      <button
-        onClick={onLock}
-        style={{
-          background: "none",
-          border: "none",
-          cursor: "pointer",
-          padding: 0,
-          width: 32,
-          height: 32,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-        title="Lock Wallet"
-      >
-        <svg
-          width="22"
-          height="22"
-          viewBox="0 0 22 22"
-          fill="nonde"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <rect
-            x="5"
-            y="10"
-            width="12"
-            height="7"
-            rx="2"
-            stroke="white"
-            strokeWidth="2"
-          />
-          <path
-            d="M7 10V7a4 4 0 1 1 8 0v3"
-            stroke="white"
-            strokeWidth="2"
-            strokeLinecap="round"
-          />
-        </svg>
-      </button>
-    )}
-  </div>
-);
+import Navbar from "./Navbar";
 
 const App = () => {
   const {
