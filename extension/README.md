@@ -1,4 +1,4 @@
-# Sepolia ETH Wallet Extension
+# WALL-ET Extension
 
 A secure Ethereum wallet extension for the Sepolia testnet, built with modern web technologies and best security practices.
 
@@ -32,7 +32,7 @@ A secure Ethereum wallet extension for the Sepolia testnet, built with modern we
 
 6. **Pin the Extension**:
    - Click the puzzle piece icon in your browser toolbar
-   - Find "Sepolia ETH Wallet" and click the pin icon
+   - Find "WALL-ET" and click the pin icon
 
 ## Usage
 

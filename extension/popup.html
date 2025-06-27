@@ -1,171 +1,219 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sepolia ETH Wallet</title>
-    <link rel="stylesheet" href="styles.css">
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WALL-ET</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
     <div class="container">
-        <div class="header">
-            <h1>Sepolia ETH Wallet</h1>
-            <div class="network-badge">Sepolia Testnet</div>
-        </div>
+      <div class="header">
+        <h1>WALL-ET</h1>
+        <div class="network-badge">Sepolia Testnet</div>
+      </div>
 
-        <!-- Setup Screen -->
-        <div id="setup-screen" class="screen">
-            <div class="setup-content">
-                <h2>Welcome to Sepolia ETH Wallet</h2>
-                <p>Choose how you'd like to set up your wallet:</p>
-                
-                <div class="setup-options">
-                    <button id="generate-wallet" class="btn btn-primary">
-                        <span class="icon">🔑</span>
-                        Generate New Wallet
-                    </button>
-                    
-                    <button id="import-wallet" class="btn btn-secondary">
-                        <span class="icon">📥</span>
-                        Import Existing Wallet
-                    </button>
-                </div>
+      <!-- Setup Screen -->
+      <div id="setup-screen" class="screen">
+        <div class="setup-content">
+          <h2>Welcome to WALL-ET</h2>
+          <p>Choose how you'd like to set up your wallet:</p>
+
+          <div class="setup-options">
+            <button id="generate-wallet" class="btn btn-primary">
+              <span class="icon">🔑</span>
+              Generate New Wallet
+            </button>
+
+            <button id="import-wallet" class="btn btn-secondary">
+              <span class="icon">📥</span>
+              Import Existing Wallet
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Import Screen -->
+      <div id="import-screen" class="screen hidden">
+        <div class="import-content">
+          <h2>Import Wallet</h2>
+          <p>Enter your private key (without 0x prefix):</p>
+
+          <div class="input-group">
+            <input
+              type="password"
+              id="private-key-input"
+              placeholder="Enter private key"
+              class="input"
+            />
+            <button id="show-private-key" class="btn-icon">👁️</button>
+          </div>
+
+          <div class="button-group">
+            <button id="confirm-import" class="btn btn-primary">
+              Import Wallet
+            </button>
+            <button id="back-to-setup" class="btn btn-secondary">Back</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Generated Wallet Screen -->
+      <div id="generated-wallet-screen" class="screen hidden">
+        <div class="generated-content">
+          <h2>Wallet Generated Successfully!</h2>
+          <p>
+            Your new wallet has been created. Please save your private key
+            securely:
+          </p>
+
+          <div class="private-key-display">
+            <div class="input-group">
+              <input
+                type="text"
+                id="generated-private-key"
+                readonly
+                class="input"
+              />
+              <button id="copy-private-key" class="btn-icon">📋</button>
             </div>
-        </div>
+            <small class="warning"
+              >⚠️ Save this private key! You won't be able to see it
+              again.</small
+            >
+          </div>
 
-        <!-- Import Screen -->
-        <div id="import-screen" class="screen hidden">
-            <div class="import-content">
-                <h2>Import Wallet</h2>
-                <p>Enter your private key (without 0x prefix):</p>
-                
-                <div class="input-group">
-                    <input type="password" id="private-key-input" placeholder="Enter private key" class="input">
-                    <button id="show-private-key" class="btn-icon">👁️</button>
-                </div>
-                
-                <div class="button-group">
-                    <button id="confirm-import" class="btn btn-primary">Import Wallet</button>
-                    <button id="back-to-setup" class="btn btn-secondary">Back</button>
-                </div>
+          <div class="address-display">
+            <label>Wallet Address:</label>
+            <div class="input-group">
+              <input
+                type="text"
+                id="generated-address"
+                readonly
+                class="input"
+              />
+              <button id="copy-address" class="btn-icon">📋</button>
             </div>
-        </div>
+          </div>
 
-        <!-- Generated Wallet Screen -->
-        <div id="generated-wallet-screen" class="screen hidden">
-            <div class="generated-content">
-                <h2>Wallet Generated Successfully!</h2>
-                <p>Your new wallet has been created. Please save your private key securely:</p>
-                
-                <div class="private-key-display">
-                    <div class="input-group">
-                        <input type="text" id="generated-private-key" readonly class="input">
-                        <button id="copy-private-key" class="btn-icon">📋</button>
-                    </div>
-                    <small class="warning">⚠️ Save this private key! You won't be able to see it again.</small>
-                </div>
-                
-                <div class="address-display">
-                    <label>Wallet Address:</label>
-                    <div class="input-group">
-                        <input type="text" id="generated-address" readonly class="input">
-                        <button id="copy-address" class="btn-icon">📋</button>
-                    </div>
-                </div>
-                
-                <button id="continue-to-wallet" class="btn btn-primary">Continue to Wallet</button>
+          <button id="continue-to-wallet" class="btn btn-primary">
+            Continue to Wallet
+          </button>
+        </div>
+      </div>
+
+      <!-- Main Wallet Screen -->
+      <div id="wallet-screen" class="screen hidden">
+        <div class="wallet-content">
+          <div class="wallet-header">
+            <div class="address-section">
+              <label>Wallet Address:</label>
+              <div class="input-group">
+                <input type="text" id="wallet-address" readonly class="input" />
+                <button id="copy-wallet-address" class="btn-icon">📋</button>
+              </div>
             </div>
-        </div>
 
-        <!-- Main Wallet Screen -->
-        <div id="wallet-screen" class="screen hidden">
-            <div class="wallet-content">
-                <div class="wallet-header">
-                    <div class="address-section">
-                        <label>Wallet Address:</label>
-                        <div class="input-group">
-                            <input type="text" id="wallet-address" readonly class="input">
-                            <button id="copy-wallet-address" class="btn-icon">📋</button>
-                        </div>
-                    </div>
-                    
-                    <div class="balance-section">
-                        <label>Balance:</label>
-                        <div class="balance">
-                            <span id="eth-balance">0</span>
-                            <span class="currency">ETH</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="wallet-actions">
-                    <button id="send-eth" class="btn btn-primary">
-                        <span class="icon">💸</span>
-                        Send ETH
-                    </button>
-                    <button id="refresh-balance" class="btn btn-secondary">
-                        <span class="icon">🔄</span>
-                        Refresh
-                    </button>
-                </div>
-
-                <div class="transaction-history">
-                    <h3>Recent Transactions</h3>
-                    <div id="transactions-list" class="transactions-list">
-                        <div class="no-transactions">No transactions yet</div>
-                    </div>
-                </div>
+            <div class="balance-section">
+              <label>Balance:</label>
+              <div class="balance">
+                <span id="eth-balance">0</span>
+                <span class="currency">ETH</span>
+              </div>
             </div>
-        </div>
+          </div>
 
-        <!-- Send ETH Screen -->
-        <div id="send-screen" class="screen hidden">
-            <div class="send-content">
-                <h2>Send ETH</h2>
-                
-                <div class="form-group">
-                    <label for="recipient-address">Recipient Address:</label>
-                    <input type="text" id="recipient-address" placeholder="0x..." class="input">
-                </div>
-                
-                <div class="form-group">
-                    <label for="eth-amount">Amount (ETH):</label>
-                    <input type="number" id="eth-amount" placeholder="0.01" step="0.001" min="0" class="input">
-                </div>
-                
-                <div class="form-group">
-                    <label for="gas-price">Gas Price (Gwei):</label>
-                    <input type="number" id="gas-price" placeholder="20" step="1" min="1" class="input">
-                </div>
-                
-                <div class="transaction-summary">
-                    <div class="summary-item">
-                        <span>Estimated Fee:</span>
-                        <span id="estimated-fee">0 ETH</span>
-                    </div>
-                    <div class="summary-item">
-                        <span>Total:</span>
-                        <span id="total-amount">0 ETH</span>
-                    </div>
-                </div>
-                
-                <div class="button-group">
-                    <button id="confirm-send" class="btn btn-primary">Send Transaction</button>
-                    <button id="back-to-wallet" class="btn btn-secondary">Cancel</button>
-                </div>
-            </div>
-        </div>
+          <div class="wallet-actions">
+            <button id="send-eth" class="btn btn-primary">
+              <span class="icon">💸</span>
+              Send ETH
+            </button>
+            <button id="refresh-balance" class="btn btn-secondary">
+              <span class="icon">🔄</span>
+              Refresh
+            </button>
+          </div>
 
-        <!-- Loading Screen -->
-        <div id="loading-screen" class="screen hidden">
-            <div class="loading-content">
-                <div class="spinner"></div>
-                <p id="loading-message">Processing...</p>
+          <div class="transaction-history">
+            <h3>Recent Transactions</h3>
+            <div id="transactions-list" class="transactions-list">
+              <div class="no-transactions">No transactions yet</div>
             </div>
+          </div>
         </div>
+      </div>
+
+      <!-- Send ETH Screen -->
+      <div id="send-screen" class="screen hidden">
+        <div class="send-content">
+          <h2>Send ETH</h2>
+
+          <div class="form-group">
+            <label for="recipient-address">Recipient Address:</label>
+            <input
+              type="text"
+              id="recipient-address"
+              placeholder="0x..."
+              class="input"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="eth-amount">Amount (ETH):</label>
+            <input
+              type="number"
+              id="eth-amount"
+              placeholder="0.01"
+              step="0.001"
+              min="0"
+              class="input"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="gas-price">Gas Price (Gwei):</label>
+            <input
+              type="number"
+              id="gas-price"
+              placeholder="20"
+              step="1"
+              min="1"
+              class="input"
+            />
+          </div>
+
+          <div class="transaction-summary">
+            <div class="summary-item">
+              <span>Estimated Fee:</span>
+              <span id="estimated-fee">0 ETH</span>
+            </div>
+            <div class="summary-item">
+              <span>Total:</span>
+              <span id="total-amount">0 ETH</span>
+            </div>
+          </div>
+
+          <div class="button-group">
+            <button id="confirm-send" class="btn btn-primary">
+              Send Transaction
+            </button>
+            <button id="back-to-wallet" class="btn btn-secondary">
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Loading Screen -->
+      <div id="loading-screen" class="screen hidden">
+        <div class="loading-content">
+          <div class="spinner"></div>
+          <p id="loading-message">Processing...</p>
+        </div>
+      </div>
     </div>
 
     <script src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js"></script>
     <script src="wallet.js"></script>
-</body>
-</html> 
+  </body>
+</html>

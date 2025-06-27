@@ -1,6 +1,12 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { ethers } from 'ethers';
-import CryptoJS from 'crypto-js';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
+import { ethers } from "ethers";
+import crypto from "crypto-js";
 
 interface WalletContextType {
   wallet: ethers.Wallet | null;
@@ -19,7 +25,7 @@ const WalletContext = createContext<WalletContextType | undefined>(undefined);
 export const useWallet = () => {
   const context = useContext(WalletContext);
   if (context === undefined) {
-    throw new Error('useWallet must be used within a WalletProvider');
+    throw new Error("useWallet must be used within a WalletProvider");
   }
   return context;
 };
@@ -30,7 +36,7 @@ interface WalletProviderProps {
 
 export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
   const [wallet, setWallet] = useState<ethers.Wallet | null>(null);
-  const [address, setAddress] = useState<string>('');
+  const [address, setAddress] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isPasswordSet, setIsPasswordSet] = useState<boolean>(false);
 
@@ -44,34 +50,38 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
       const passwordHash = await getStoredPasswordHash();
       setIsPasswordSet(!!stored && !!passwordHash);
     } catch (error) {
-      console.error('Error checking password status:', error);
+      console.error("Error checking password status:", error);
     } finally {
       setIsLoading(false);
     }
   };
 
   const encryptPrivateKey = (privateKey: string, password: string): string => {
-    return CryptoJS.AES.encrypt(privateKey, password).toString();
+    return crypto.AES.encrypt(privateKey, password).toString();
   };
 
-  const decryptPrivateKey = (encryptedData: string, password: string): string => {
-    const bytes = CryptoJS.AES.decrypt(encryptedData, password);
-    return bytes.toString(CryptoJS.enc.Utf8);
+  const decryptPrivateKey = (
+    encryptedData: string,
+    password: string
+  ): string => {
+    const bytes = crypto.AES.decrypt(encryptedData, password);
+    return bytes.toString(crypto.enc.Utf8);
   };
 
   const generateWallet = async (password: string) => {
     try {
       setIsLoading(true);
       const newWallet = ethers.Wallet.createRandom();
-      
+
       // Encrypt and store the private key
       await storeEncryptedWallet(newWallet.privateKey, password);
-      
+
       setWallet(newWallet);
       setAddress(newWallet.address);
+      setPassword(password);
       setIsPasswordSet(true);
     } catch (error) {
-      console.error('Error generating wallet:', error);
+      console.error("Error generating wallet:", error);
       throw error;
     } finally {
       setIsLoading(false);
@@ -81,22 +91,24 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
   const importWallet = async (privateKey: string, password: string) => {
     try {
       setIsLoading(true);
-      
+
       // Validate private key format
       if (!/^[0-9a-fA-F]{64}$/.test(privateKey)) {
-        throw new Error('Invalid private key format. Please enter a 64-character hexadecimal string.');
+        throw new Error(
+          "Invalid private key format. Please enter a 64-character hexadecimal string."
+        );
       }
 
       const walletInstance = new ethers.Wallet(privateKey);
-      
+
       // Encrypt and store the private key
       await storeEncryptedWallet(privateKey, password);
-      
+
       setWallet(walletInstance);
       setAddress(walletInstance.address);
       setIsPasswordSet(true);
     } catch (error) {
-      console.error('Error importing wallet:', error);
+      console.error("Error importing wallet:", error);
       throw error;
     } finally {
       setIsLoading(false);
@@ -107,24 +119,28 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
     try {
       const storedWallet = await getStoredWallet();
       const storedPasswordHash = await getStoredPasswordHash();
-      
+
       if (!storedWallet || !storedPasswordHash) {
-        throw new Error('No wallet or password found');
+        throw new Error("No wallet or password found");
       }
 
       // First verify the password hash
-      const inputPasswordHash = CryptoJS.SHA256(password).toString();
+      const inputPasswordHash = crypto.SHA256(password).toString();
       if (inputPasswordHash !== storedPasswordHash) {
-        console.error('Password hash mismatch');
+        console.error("Password hash mismatch");
         return false;
       }
 
       // Decrypt the private key
-      const privateKey = decryptPrivateKey(storedWallet.encryptedPrivateKey, password);
-      
+      const privateKey = decryptPrivateKey(
+        storedWallet.encryptedPrivateKey,
+        password
+      );
+
+      console.log("Decrypted private key:", privateKey);
       // Validate the decrypted private key
-      if (!/^[0-9a-fA-F]{64}$/.test(privateKey)) {
-        console.error('Invalid private key format after decryption');
+      if (!/^0x?[0-9a-fA-F]{64}$/.test(privateKey)) {
+        console.error("Invalid private key format after decryption");
         return false;
       }
 
@@ -133,7 +149,7 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
       setAddress(walletInstance.address);
       return true;
     } catch (error) {
-      console.error('Error unlocking wallet:', error);
+      console.error("Error unlocking wallet:", error);
       return false;
     }
   };
@@ -141,76 +157,76 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
   const setPassword = async (password: string) => {
     try {
       // Store the password hash for verification (not the actual password)
-      const passwordHash = CryptoJS.SHA256(password).toString();
+      const passwordHash = crypto.SHA256(password).toString();
       await chrome.storage.local.set({ passwordHash });
     } catch (error) {
-      console.error('Error setting password:', error);
+      console.error("Error setting password:", error);
       throw error;
     }
   };
 
   const clearWallet = async () => {
     try {
-      await chrome.storage.local.remove(['wallet', 'passwordHash']);
+      await chrome.storage.local.remove(["wallet", "passwordHash"]);
       setWallet(null);
-      setAddress('');
+      setAddress("");
       setIsPasswordSet(false);
     } catch (error) {
-      console.error('Error clearing wallet:', error);
+      console.error("Error clearing wallet:", error);
     }
   };
 
   const storeEncryptedWallet = async (privateKey: string, password: string) => {
     try {
       const encryptedPrivateKey = encryptPrivateKey(privateKey, password);
-      const passwordHash = CryptoJS.SHA256(password).toString();
-      
+      const passwordHash = crypto.SHA256(password).toString();
+
       const walletData = {
         encryptedPrivateKey: encryptedPrivateKey,
         address: new ethers.Wallet(privateKey).address,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       };
-      
-      if (typeof chrome !== 'undefined' && chrome.storage) {
-        await chrome.storage.local.set({ 
+
+      if (typeof chrome !== "undefined" && chrome.storage) {
+        await chrome.storage.local.set({
           wallet: walletData,
-          passwordHash: passwordHash
+          passwordHash: passwordHash,
         });
       } else {
-        localStorage.setItem('sepolia_wallet', JSON.stringify(walletData));
-        localStorage.setItem('password_hash', passwordHash);
+        localStorage.setItem("sepolia_wallet", JSON.stringify(walletData));
+        localStorage.setItem("password_hash", passwordHash);
       }
     } catch (error) {
-      console.error('Error storing encrypted wallet:', error);
+      console.error("Error storing encrypted wallet:", error);
       throw error;
     }
   };
 
   const getStoredWallet = async () => {
     try {
-      if (typeof chrome !== 'undefined' && chrome.storage) {
-        const result = await chrome.storage.local.get(['wallet']);
+      if (typeof chrome !== "undefined" && chrome.storage) {
+        const result = await chrome.storage.local.get(["wallet"]);
         return result.wallet;
       } else {
-        const stored = localStorage.getItem('sepolia_wallet');
+        const stored = localStorage.getItem("sepolia_wallet");
         return stored ? JSON.parse(stored) : null;
       }
     } catch (error) {
-      console.error('Error retrieving stored wallet:', error);
+      console.error("Error retrieving stored wallet:", error);
       return null;
     }
   };
 
   const getStoredPasswordHash = async () => {
     try {
-      if (typeof chrome !== 'undefined' && chrome.storage) {
-        const result = await chrome.storage.local.get(['passwordHash']);
+      if (typeof chrome !== "undefined" && chrome.storage) {
+        const result = await chrome.storage.local.get(["passwordHash"]);
         return result.passwordHash;
       } else {
-        return localStorage.getItem('password_hash');
+        return localStorage.getItem("password_hash");
       }
     } catch (error) {
-      console.error('Error retrieving password hash:', error);
+      console.error("Error retrieving password hash:", error);
       return null;
     }
   };
@@ -224,12 +240,10 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
     importWallet,
     clearWallet,
     setPassword,
-    unlockWallet
+    unlockWallet,
   };
 
   return (
-    <WalletContext.Provider value={value}>
-      {children}
-    </WalletContext.Provider>
+    <WalletContext.Provider value={value}>{children}</WalletContext.Provider>
   );
-}; 
+};

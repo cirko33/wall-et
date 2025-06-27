@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 interface GeneratedWalletScreenProps {
   walletData: {
@@ -8,21 +8,24 @@ interface GeneratedWalletScreenProps {
   onContinue: () => void;
 }
 
-const GeneratedWalletScreen: React.FC<GeneratedWalletScreenProps> = ({ walletData, onContinue }) => {
+const GeneratedWalletScreen: React.FC<GeneratedWalletScreenProps> = ({
+  walletData,
+  onContinue,
+}) => {
   const copyToClipboard = async (text: string) => {
     try {
       await navigator.clipboard.writeText(text);
-      alert('Copied to clipboard!');
+      alert("Copied to clipboard!");
     } catch (error) {
-      console.error('Error copying to clipboard:', error);
+      console.error("Error copying to clipboard:", error);
       // Fallback for older browsers
-      const textArea = document.createElement('textarea');
+      const textArea = document.createElement("textarea");
       textArea.value = text;
       document.body.appendChild(textArea);
       textArea.select();
-      document.execCommand('copy');
+      document.execCommand("copy");
       document.body.removeChild(textArea);
-      alert('Copied to clipboard!');
+      alert("Copied to clipboard!");
     }
   };
 
@@ -33,15 +36,18 @@ const GeneratedWalletScreen: React.FC<GeneratedWalletScreenProps> = ({ walletDat
   return (
     <div className="container">
       <div className="header">
-        <h1>Sepolia ETH Wallet</h1>
+        <h1>WALL-ET</h1>
         <div className="network-badge">Sepolia Testnet</div>
       </div>
 
       <div className="screen">
         <div className="generated-content">
           <h2>Wallet Generated Successfully!</h2>
-          <p>Your new wallet has been created. Please save your private key securely:</p>
-          
+          <p>
+            Your new wallet has been created. Please save your private key
+            securely:
+          </p>
+
           <div className="private-key-display">
             <div className="input-group">
               <input
@@ -50,16 +56,18 @@ const GeneratedWalletScreen: React.FC<GeneratedWalletScreenProps> = ({ walletDat
                 readOnly
                 className="input"
               />
-              <button 
-                onClick={() => copyToClipboard(walletData.privateKey)} 
+              <button
+                onClick={() => copyToClipboard(walletData.privateKey)}
                 className="btn-icon"
               >
                 📋
               </button>
             </div>
-            <small className="warning">⚠️ Save this private key! You won't be able to see it again.</small>
+            <small className="warning">
+              ⚠️ Save this private key! You won't be able to see it again.
+            </small>
           </div>
-          
+
           <div className="address-display">
             <label>Wallet Address:</label>
             <div className="input-group">
@@ -69,15 +77,15 @@ const GeneratedWalletScreen: React.FC<GeneratedWalletScreenProps> = ({ walletDat
                 readOnly
                 className="input"
               />
-              <button 
-                onClick={() => copyToClipboard(walletData.address)} 
+              <button
+                onClick={() => copyToClipboard(walletData.address)}
                 className="btn-icon"
               >
                 📋
               </button>
             </div>
           </div>
-          
+
           <button onClick={onContinue} className="btn btn-primary">
             Continue to Wallet
           </button>
@@ -87,4 +95,4 @@ const GeneratedWalletScreen: React.FC<GeneratedWalletScreenProps> = ({ walletDat
   );
 };
 
-export default GeneratedWalletScreen; 
+export default GeneratedWalletScreen;

@@ -1,6 +1,6 @@
-# WALL-E Ethereum Wallet Extension
+# WALL-ET Ethereum Wallet Extension
 
-<img src=".assets/walle.png" width=300 />
+<img src=".assets/wall-et.png" width=300 />
 
 A secure Ethereum wallet extension for Brave browser with Sepolia testnet support.
 

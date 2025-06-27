@@ -1,7 +1,7 @@
 {
-  "name": "sepolia-eth-wallet-extension",
+  "name": "wall-e-wallet",
   "version": "1.0.0",
-  "description": "A secure Ethereum wallet extension for the Sepolia testnet",
+  "description": "Ethereum Wallet",
   "main": "dist/popup.js",
   "scripts": {
     "build": "webpack --config webpack.config.js",

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 
 interface ImportScreenProps {
   onBack: () => void;
@@ -6,32 +6,34 @@ interface ImportScreenProps {
 }
 
 const ImportScreen: React.FC<ImportScreenProps> = ({ onBack, onImport }) => {
-  const [privateKey, setPrivateKey] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [error, setError] = useState('');
+  const [privateKey, setPrivateKey] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
 
     if (!privateKey.trim()) {
-      setError('Please enter a private key');
+      setError("Please enter a private key");
       return;
     }
 
     if (!/^[0-9a-fA-F]{64}$/.test(privateKey.trim())) {
-      setError('Invalid private key format. Please enter a 64-character hexadecimal string.');
+      setError(
+        "Invalid private key format. Please enter a 64-character hexadecimal string."
+      );
       return;
     }
 
     if (password.length < 8) {
-      setError('Password must be at least 8 characters long');
+      setError("Password must be at least 8 characters long");
       return;
     }
 
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
+      setError("Passwords do not match");
       return;
     }
 
@@ -41,15 +43,17 @@ const ImportScreen: React.FC<ImportScreenProps> = ({ onBack, onImport }) => {
   return (
     <div className="container">
       <div className="header">
-        <h1>Sepolia ETH Wallet</h1>
+        <h1>WALL-ET</h1>
         <div className="network-badge">Sepolia Testnet</div>
       </div>
 
       <div className="screen">
         <div className="import-content">
           <h2>Import Wallet</h2>
-          <p>Enter your private key and set a password to import your wallet:</p>
-          
+          <p>
+            Enter your private key and set a password to import your wallet:
+          </p>
+
           <form onSubmit={handleSubmit}>
             <div className="form-group">
               <label htmlFor="private-key-input">Private Key:</label>
@@ -93,7 +97,11 @@ const ImportScreen: React.FC<ImportScreenProps> = ({ onBack, onImport }) => {
             {error && <div className="warning">{error}</div>}
 
             <div className="button-group">
-              <button type="button" className="btn btn-secondary" onClick={onBack}>
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={onBack}
+              >
                 <span className="icon">←</span>
                 Back to Setup
               </button>
@@ -105,8 +113,9 @@ const ImportScreen: React.FC<ImportScreenProps> = ({ onBack, onImport }) => {
           </form>
 
           <div className="warning">
-            <strong>⚠️ Security Warning:</strong> Your private key will be encrypted with the password you provide.
-            Make sure to remember this password - you'll need it to unlock your wallet!
+            <strong>⚠️ Security Warning:</strong> Your private key will be
+            encrypted with the password you provide. Make sure to remember this
+            password - you'll need it to unlock your wallet!
           </div>
         </div>
       </div>
@@ -114,4 +123,4 @@ const ImportScreen: React.FC<ImportScreenProps> = ({ onBack, onImport }) => {
   );
 };
 
-export default ImportScreen; 
+export default ImportScreen;
