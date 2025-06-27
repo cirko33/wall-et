@@ -1,19 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 
 interface PasswordUnlockScreenProps {
   onUnlock: (password: string) => void;
 }
 
-const PasswordUnlockScreen: React.FC<PasswordUnlockScreenProps> = ({ onUnlock }) => {
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+const PasswordUnlockScreen: React.FC<PasswordUnlockScreenProps> = ({
+  onUnlock,
+}) => {
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
 
     if (!password) {
-      setError('Please enter your password');
+      setError("Please enter your password");
       return;
     }
 
@@ -25,7 +27,7 @@ const PasswordUnlockScreen: React.FC<PasswordUnlockScreenProps> = ({ onUnlock })
       <div className="setup-content">
         <h2>Unlock Wallet</h2>
         <p>Enter your password to unlock your wallet:</p>
-        
+
         <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label htmlFor="unlock-password">Password:</label>
@@ -50,12 +52,12 @@ const PasswordUnlockScreen: React.FC<PasswordUnlockScreenProps> = ({ onUnlock })
         </form>
 
         <div className="warning">
-          <strong>Remember:</strong> If you forget your password, you won't be able to access your wallet.
-          Make sure to keep your password safe!
+          <strong>Remember:</strong> If you forget your password, you won't be
+          able to access your wallet. Make sure to keep your password safe!
         </div>
       </div>
     </div>
   );
 };
 
-export default PasswordUnlockScreen; 
+export default PasswordUnlockScreen;

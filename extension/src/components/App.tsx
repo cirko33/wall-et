@@ -9,6 +9,68 @@ import LoadingScreen from "./LoadingScreen";
 import PasswordSetupScreen from "./PasswordSetupScreen";
 import PasswordUnlockScreen from "./PasswordUnlockScreen";
 import ViewPrivateKeyScreen from "./ViewPrivateKeyScreen";
+import wallETIcon from "../../icons/wall-et.png";
+
+const Navbar: React.FC<{
+  onLock?: () => void;
+  showLock?: boolean;
+  dark?: boolean;
+}> = ({ onLock, showLock = true, dark = false }) => (
+  <div
+    style={{
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      height: 60,
+      padding: "0 16px",
+      background: dark ? "#2a2f40" : "#fff",
+      borderBottom: dark ? "1px solid #181a20" : "1px solid #eee",
+    }}
+  >
+    <img src={wallETIcon} alt="Wall-Et" style={{ width: 50, height: 50 }} />
+    {showLock && (
+      <button
+        onClick={onLock}
+        style={{
+          background: "none",
+          border: "none",
+          cursor: "pointer",
+          padding: 0,
+          width: 32,
+          height: 32,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+        title="Lock Wallet"
+      >
+        <svg
+          width="22"
+          height="22"
+          viewBox="0 0 22 22"
+          fill="nonde"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <rect
+            x="5"
+            y="10"
+            width="12"
+            height="7"
+            rx="2"
+            stroke="white"
+            strokeWidth="2"
+          />
+          <path
+            d="M7 10V7a4 4 0 1 1 8 0v3"
+            stroke="white"
+            strokeWidth="2"
+            strokeLinecap="round"
+          />
+        </svg>
+      </button>
+    )}
+  </div>
+);
 
 const App = () => {
   const {
@@ -18,6 +80,7 @@ const App = () => {
     generateWallet,
     importWallet,
     unlockWallet,
+    lockWallet,
   } = useWallet();
   const [currentScreen, setCurrentScreen] = useState<
     | "setup"
@@ -98,6 +161,11 @@ const App = () => {
     }
   };
 
+  const handleLock = () => {
+    lockWallet();
+    setCurrentScreen("unlock");
+  };
+
   if (isLoading) {
     return <LoadingScreen />;
   }
@@ -107,30 +175,51 @@ const App = () => {
     switch (currentScreen) {
       case "wallet":
         return (
-          <WalletScreen
-            onSendEth={() => setCurrentScreen("send")}
-            onCreateNewWallet={() => setCurrentScreen("password-setup")}
-            onViewPrivateKey={() => setCurrentScreen("view-private-key")}
-          />
+          <>
+            <Navbar onLock={handleLock} dark showLock />
+            <WalletScreen
+              onSendEth={() => setCurrentScreen("send")}
+              onCreateNewWallet={() => setCurrentScreen("password-setup")}
+              onViewPrivateKey={() => setCurrentScreen("view-private-key")}
+            />
+          </>
         );
       case "send":
-        return <SendScreen onBack={() => setCurrentScreen("wallet")} />;
+        return (
+          <>
+            <Navbar onLock={handleLock} dark showLock />
+            <SendScreen onBack={() => setCurrentScreen("wallet")} />
+          </>
+        );
       case "view-private-key":
-        return <ViewPrivateKeyScreen onBack={() => setCurrentScreen("wallet")} />;
+        return (
+          <>
+            <Navbar onLock={handleLock} dark showLock />
+            <ViewPrivateKeyScreen onBack={() => setCurrentScreen("wallet")} />
+          </>
+        );
       default:
         return (
-          <WalletScreen
-            onSendEth={() => setCurrentScreen("send")}
-            onCreateNewWallet={() => setCurrentScreen("password-setup")}
-            onViewPrivateKey={() => setCurrentScreen("view-private-key")}
-          />
+          <>
+            <Navbar onLock={handleLock} dark showLock />
+            <WalletScreen
+              onSendEth={() => setCurrentScreen("send")}
+              onCreateNewWallet={() => setCurrentScreen("password-setup")}
+              onViewPrivateKey={() => setCurrentScreen("view-private-key")}
+            />
+          </>
         );
     }
   }
 
   // If password is set but no wallet is loaded, show unlock screen
   if (isPasswordSet && !wallet) {
-    return <PasswordUnlockScreen onUnlock={handleUnlock} />;
+    return (
+      <>
+        <Navbar dark showLock={false} />
+        <PasswordUnlockScreen onUnlock={handleUnlock} />
+      </>
+    );
   }
 
   // If no password is set, show setup screen

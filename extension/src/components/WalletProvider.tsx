@@ -18,6 +18,7 @@ interface WalletContextType {
   clearWallet: () => Promise<void>;
   setPassword: (password: string) => Promise<void>;
   unlockWallet: (password: string) => Promise<boolean>;
+  lockWallet: () => void;
 }
 
 const WalletContext = createContext<WalletContextType | undefined>(undefined);
@@ -231,6 +232,12 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
     }
   };
 
+  const lockWallet = () => {
+    setWallet(null);
+    setAddress("");
+    // Do not clear password hash or wallet from storage, just lock in memory
+  };
+
   const value: WalletContextType = {
     wallet,
     address,
@@ -241,6 +248,7 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
     clearWallet,
     setPassword,
     unlockWallet,
+    lockWallet,
   };
 
   return (
