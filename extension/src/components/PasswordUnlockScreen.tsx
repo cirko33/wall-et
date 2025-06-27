@@ -44,14 +44,13 @@ const PasswordUnlockScreen: React.FC<PasswordUnlockScreenProps> = ({ onUnlock })
 
           <div className="button-group">
             <button type="submit" className="btn btn-primary">
-              <span className="icon">🔓</span>
               Unlock Wallet
             </button>
           </div>
         </form>
 
         <div className="warning">
-          <strong>⚠️ Remember:</strong> If you forget your password, you won't be able to access your wallet.
+          <strong>Remember:</strong> If you forget your password, you won't be able to access your wallet.
           Make sure to keep your password safe!
         </div>
       </div>

@@ -17,11 +17,6 @@ const SendScreen: React.FC<SendScreenProps> = ({ onBack }) => {
       <div className="send-content">
         <h2>Send ETH</h2>
         
-        <div className="warning">
-          <strong>⚠️ Network Not Available:</strong> This wallet tool does not have network connectivity.
-          You can only generate and import wallets locally.
-        </div>
-
         <div className="form-group">
           <label htmlFor="recipient-address">Recipient Address:</label>
           <input
@@ -51,12 +46,10 @@ const SendScreen: React.FC<SendScreenProps> = ({ onBack }) => {
         </div>
 
         <div className="button-group">
-          <button className="btn btn-secondary" onClick={onBack}>
-            <span className="icon">←</span>
-            Back to Wallet
+          <button type="button" className="btn btn-secondary" onClick={onBack}>
+            Back
           </button>
-          <button className="btn btn-primary" onClick={handleSend} disabled>
-            <span className="icon">💸</span>
+          <button type="button" className="btn btn-primary" onClick={handleSend} disabled>
             Send Transaction
           </button>
         </div>

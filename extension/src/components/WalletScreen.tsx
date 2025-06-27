@@ -4,11 +4,11 @@ import { useWallet } from './WalletProvider';
 interface WalletScreenProps {
   onSendEth: () => void;
   onCreateNewWallet: () => void;
+  onViewPrivateKey: () => void;
 }
 
-const WalletScreen: React.FC<WalletScreenProps> = ({ onSendEth, onCreateNewWallet }) => {
+const WalletScreen: React.FC<WalletScreenProps> = ({ onSendEth, onCreateNewWallet, onViewPrivateKey }) => {
   const { wallet, address, clearWallet } = useWallet();
-  const [showPrivateKey, setShowPrivateKey] = useState(false);
 
   const copyToClipboard = async (text: string) => {
     try {
@@ -29,17 +29,6 @@ const WalletScreen: React.FC<WalletScreenProps> = ({ onSendEth, onCreateNewWalle
     if (confirm('This will clear your current wallet and create a new one. Are you sure?')) {
       await clearWallet();
       onCreateNewWallet();
-    }
-  };
-
-  const handleViewPrivateKey = () => {
-    if (wallet) {
-      const privateKey = wallet.privateKey;
-      const message = `Your Private Key:\n\n${privateKey}\n\n⚠️ WARNING: Never share this private key with anyone!\n\nClick OK to copy it to clipboard.`;
-      
-      if (confirm(message)) {
-        copyToClipboard(privateKey);
-      }
     }
   };
 
@@ -69,33 +58,21 @@ const WalletScreen: React.FC<WalletScreenProps> = ({ onSendEth, onCreateNewWalle
               onClick={() => copyToClipboard(address)}
               title="Copy address"
             >
-              📋
+              Copy
             </button>
           </div>
         </div>
 
         <div className="wallet-actions">
           <button className="btn btn-primary" onClick={onSendEth}>
-            <span className="icon">💸</span>
             Send ETH
           </button>
-          <button className="btn btn-secondary" onClick={handleViewPrivateKey}>
-            <span className="icon">🔑</span>
+          <button className="btn btn-secondary" onClick={onViewPrivateKey}>
             View Private Key
           </button>
-          <button className="btn btn-secondary" onClick={handleCreateNewWallet}>
-            <span className="icon">🆕</span>
-            Create New Wallet
-          </button>
           <button className="btn btn-secondary" onClick={handleClearWallet}>
-            <span className="icon">🗑️</span>
             Clear Wallet
           </button>
-        </div>
-
-        <div className="warning">
-          <strong>⚠️ Important:</strong> This is a local wallet tool. No network connectivity is available.
-          You can generate and import wallets, but cannot check balances or send transactions.
         </div>
       </div>
     </div>

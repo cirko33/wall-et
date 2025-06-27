@@ -23,12 +23,10 @@ const SetupScreen: React.FC<SetupScreenProps> = ({
 
           <div className="setup-options">
             <button onClick={onGenerateWallet} className="btn btn-primary">
-              <span className="icon">🔑</span>
               Generate New Wallet
             </button>
 
             <button onClick={onImportWallet} className="btn btn-secondary">
-              <span className="icon">📥</span>
               Import Existing Wallet
             </button>
           </div>

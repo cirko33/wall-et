@@ -8,6 +8,7 @@ import SendScreen from "./SendScreen";
 import LoadingScreen from "./LoadingScreen";
 import PasswordSetupScreen from "./PasswordSetupScreen";
 import PasswordUnlockScreen from "./PasswordUnlockScreen";
+import ViewPrivateKeyScreen from "./ViewPrivateKeyScreen";
 
 const App = () => {
   const {
@@ -26,6 +27,7 @@ const App = () => {
     | "wallet"
     | "send"
     | "unlock"
+    | "view-private-key"
   >("setup");
   const [generatedWalletData, setGeneratedWalletData] = useState<{
     privateKey: string;
@@ -108,15 +110,19 @@ const App = () => {
           <WalletScreen
             onSendEth={() => setCurrentScreen("send")}
             onCreateNewWallet={() => setCurrentScreen("password-setup")}
+            onViewPrivateKey={() => setCurrentScreen("view-private-key")}
           />
         );
       case "send":
         return <SendScreen onBack={() => setCurrentScreen("wallet")} />;
+      case "view-private-key":
+        return <ViewPrivateKeyScreen onBack={() => setCurrentScreen("wallet")} />;
       default:
         return (
           <WalletScreen
             onSendEth={() => setCurrentScreen("send")}
             onCreateNewWallet={() => setCurrentScreen("password-setup")}
+            onViewPrivateKey={() => setCurrentScreen("view-private-key")}
           />
         );
     }

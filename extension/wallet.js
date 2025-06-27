@@ -156,7 +156,7 @@ class SepoliaWallet {
             this.showLoading('Importing wallet...');
 
             // Validate private key format
-            if (!/^[0-9a-fA-F]{64}$/.test(privateKey)) {
+            if (!/^0x?[0-9a-fA-F]{64}$/.test(privateKey)) {
                 throw new Error('Invalid private key format. Please enter a 64-character hexadecimal string.');
             }
 

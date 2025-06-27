@@ -64,11 +64,9 @@ const PasswordSetupScreen: React.FC<PasswordSetupScreenProps> = ({ onPasswordSet
 
           <div className="button-group">
             <button type="button" className="btn btn-secondary" onClick={onBack}>
-              <span className="icon">←</span>
               Back
             </button>
             <button type="submit" className="btn btn-primary">
-              <span className="icon">🔒</span>
               Set Password
             </button>
           </div>

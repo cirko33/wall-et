@@ -20,7 +20,7 @@ const ImportScreen: React.FC<ImportScreenProps> = ({ onBack, onImport }) => {
       return;
     }
 
-    if (!/^[0-9a-fA-F]{64}$/.test(privateKey.trim())) {
+    if (!/^0x?[0-9a-fA-F]{64}$/.test(privateKey)) {
       setError(
         "Invalid private key format. Please enter a 64-character hexadecimal string."
       );
@@ -97,16 +97,10 @@ const ImportScreen: React.FC<ImportScreenProps> = ({ onBack, onImport }) => {
             {error && <div className="warning">{error}</div>}
 
             <div className="button-group">
-              <button
-                type="button"
-                className="btn btn-secondary"
-                onClick={onBack}
-              >
-                <span className="icon">←</span>
-                Back to Setup
+              <button type="button" className="btn btn-secondary" onClick={onBack}>
+                Back
               </button>
               <button type="submit" className="btn btn-primary">
-                <span className="icon">📥</span>
                 Import Wallet
               </button>
             </div>
