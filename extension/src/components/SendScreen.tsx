@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useWallet } from './WalletProvider';
+import React, { useState, useEffect } from "react";
+import { useWallet } from "./WalletProvider";
 
 interface SendScreenProps {
   onBack: () => void;
@@ -7,56 +7,56 @@ interface SendScreenProps {
 
 const SendScreen: React.FC<SendScreenProps> = ({ onBack }) => {
   const { wallet, sendTransaction } = useWallet();
-  const [recipientAddress, setRecipientAddress] = useState('');
-  const [amount, setAmount] = useState('');
-  const [gasPrice, setGasPrice] = useState('20');
+  const [recipientAddress, setRecipientAddress] = useState("");
+  const [amount, setAmount] = useState("");
+  const [gasPrice, setGasPrice] = useState("20");
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [estimatedFee, setEstimatedFee] = useState('0');
-  const [totalAmount, setTotalAmount] = useState('0');
+  const [error, setError] = useState("");
+  const [estimatedFee, setEstimatedFee] = useState("0");
+  const [totalAmount, setTotalAmount] = useState("0");
 
   // Calculate estimated fee and total amount
   const calculateFees = () => {
     const amountNum = parseFloat(amount) || 0;
     const gasPriceNum = parseInt(gasPrice) || 20;
     const gasLimit = 21000; // Standard for ETH transfer
-    
+
     // Calculate fee in ETH
     const feeWei = gasLimit * (gasPriceNum * 1e9); // Convert gwei to wei
     const feeEth = feeWei / 1e18; // Convert wei to ETH
-    
+
     setEstimatedFee(feeEth.toFixed(6));
     setTotalAmount((amountNum + feeEth).toFixed(6));
   };
 
   // Update calculations when amount or gas price changes
-  React.useEffect(() => {
+  useEffect(() => {
     calculateFees();
   }, [amount, gasPrice]);
 
   const handleSend = async () => {
     if (!wallet) {
-      setError('No wallet loaded');
+      setError("No wallet loaded");
       return;
     }
 
     if (!recipientAddress.trim()) {
-      setError('Please enter recipient address');
+      setError("Please enter recipient address");
       return;
     }
 
     if (!amount || parseFloat(amount) <= 0) {
-      setError('Please enter a valid amount');
+      setError("Please enter a valid amount");
       return;
     }
 
     if (!gasPrice || parseInt(gasPrice) <= 0) {
-      setError('Please enter a valid gas price');
+      setError("Please enter a valid gas price");
       return;
     }
 
     setIsLoading(true);
-    setError('');
+    setError("");
 
     try {
       // Send the transaction to the network
@@ -67,7 +67,7 @@ const SendScreen: React.FC<SendScreenProps> = ({ onBack }) => {
       );
 
       // Log the transaction data
-      console.log('Transaction sent successfully:', {
+      console.log("Transaction sent successfully:", {
         txHash: txHash,
         receipt: receipt,
         from: wallet.address,
@@ -76,20 +76,25 @@ const SendScreen: React.FC<SendScreenProps> = ({ onBack }) => {
         gasPrice: gasPrice,
         gasLimit: 21000,
         chainId: 11155111, // Sepolia
-        timestamp: Date.now()
+        timestamp: Date.now(),
       });
-      
+
       // Show success message
-      alert(`Transaction sent successfully!\n\nTransaction Hash: ${txHash}\n\nBlock Number: ${receipt.blockNumber}\n\nGas Used: ${receipt.gasUsed.toString()}\n\nView on Etherscan: https://sepolia.etherscan.io/tx/${txHash}`);
-      
+      alert(
+        `Transaction sent successfully!\n\nTransaction Hash: ${txHash}\n\nBlock Number: ${
+          receipt.blockNumber
+        }\n\nGas Used: ${receipt.gasUsed.toString()}\n\nView on Etherscan: https://sepolia.etherscan.io/tx/${txHash}`
+      );
+
       // Clear form
-      setRecipientAddress('');
-      setAmount('');
-      setGasPrice('20');
-      
+      setRecipientAddress("");
+      setAmount("");
+      setGasPrice("20");
     } catch (error) {
-      console.error('Error sending transaction:', error);
-      setError(error instanceof Error ? error.message : 'Failed to send transaction');
+      console.error("Error sending transaction:", error);
+      setError(
+        error instanceof Error ? error.message : "Failed to send transaction"
+      );
     } finally {
       setIsLoading(false);
     }
@@ -99,7 +104,7 @@ const SendScreen: React.FC<SendScreenProps> = ({ onBack }) => {
     <div className="screen">
       <div className="send-content">
         <h2>Send ETH</h2>
-        
+
         <div className="form-group">
           <label htmlFor="recipient-address">Recipient Address:</label>
           <input
@@ -154,25 +159,35 @@ const SendScreen: React.FC<SendScreenProps> = ({ onBack }) => {
         {error && <div className="warning">{error}</div>}
 
         <div className="button-group">
-          <button className="btn btn-secondary" onClick={onBack} disabled={isLoading}>
+          <button
+            className="btn btn-secondary"
+            onClick={onBack}
+            disabled={isLoading}
+          >
             Back to Wallet
           </button>
-          <button 
-            className="btn btn-primary" 
-            onClick={handleSend} 
-            disabled={isLoading || !recipientAddress.trim() || !amount || parseFloat(amount) <= 0}
+          <button
+            className="btn btn-primary"
+            onClick={handleSend}
+            disabled={
+              isLoading ||
+              !recipientAddress.trim() ||
+              !amount ||
+              parseFloat(amount) <= 0
+            }
           >
-            {isLoading ? 'Sending Transaction...' : 'Send Transaction'}
+            {isLoading ? "Sending Transaction..." : "Send Transaction"}
           </button>
         </div>
 
         <div className="warning">
-          <strong>ℹ️ Transaction Info:</strong> This extension connects to Sepolia testnet via Infura and sends real transactions. 
-          Make sure you have sufficient Sepolia ETH balance before sending transactions.
+          <strong>ℹ️ Transaction Info:</strong> This extension connects to
+          Sepolia testnet via Infura and sends real transactions. Make sure you
+          have sufficient Sepolia ETH balance before sending transactions.
         </div>
       </div>
     </div>
   );
 };
 
-export default SendScreen; 
+export default SendScreen;
