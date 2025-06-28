@@ -7,6 +7,7 @@ import React, {
 } from "react";
 import { ethers } from "ethers";
 import crypto from "crypto-js";
+import MultiSigJson from "../../contracts/MultiSig.json";
 
 interface WalletContextType {
   wallet: ethers.Wallet | null;
@@ -37,6 +38,7 @@ interface WalletContextType {
     receipt: any;
   }>;
   getBalance: () => Promise<string>;
+  deployMultiSig: (signers: string[], minSignatures: number) => Promise<string>;
 }
 
 const WalletContext = createContext<WalletContextType | undefined>(undefined);
@@ -446,6 +448,30 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
     return ethers.utils.formatEther(balance);
   };
 
+  const deployMultiSig = async (
+    signers: string[],
+    minSignatures: number
+  ): Promise<string> => {
+    if (!wallet) throw new Error("No wallet loaded");
+    try {
+      // Use the user's wallet as signer
+      const signer = wallet.connect(provider);
+      const abi = MultiSigJson.abi;
+      // @ts-ignore
+      const bytecode = MultiSigJson.bytecode?.object || MultiSigJson.bytecode;
+      const factory = new ethers.ContractFactory(abi, bytecode, signer);
+      if (!signers.every((addr) => ethers.utils.isAddress(addr))) {
+        throw new Error("All signers must be valid Ethereum addresses");
+      }
+      const contract = await factory.deploy(signers, minSignatures);
+      await contract.deployed();
+      return contract.address;
+    } catch (e: any) {
+      console.error("Error deploying MultiSig contract:", e);
+      throw e;
+    }
+  };
+
   const value: WalletContextType = {
     wallet,
     address,
@@ -460,6 +486,7 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
     signTransaction,
     sendTransaction,
     getBalance,
+    deployMultiSig,
   };
 
   return (

@@ -15,7 +15,6 @@ const GeneratedWalletScreen: React.FC<GeneratedWalletScreenProps> = ({
   const copyToClipboard = async (text: string) => {
     try {
       await navigator.clipboard.writeText(text);
-      alert("Copied to clipboard!");
     } catch (error) {
       console.error("Error copying to clipboard:", error);
       // Fallback for older browsers
@@ -25,7 +24,6 @@ const GeneratedWalletScreen: React.FC<GeneratedWalletScreenProps> = ({
       textArea.select();
       document.execCommand("copy");
       document.body.removeChild(textArea);
-      alert("Copied to clipboard!");
     }
   };
 

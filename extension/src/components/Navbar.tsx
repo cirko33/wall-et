@@ -1,11 +1,13 @@
 import wallETIcon from "../../icons/wall-et.png";
 import React from "react";
+import { Screen } from "../types";
 
 const Navbar: React.FC<{
   onLock?: () => void;
   showLock?: boolean;
   dark?: boolean;
-}> = ({ onLock, showLock = true, dark = false }) => (
+  setCurrentScreen?: (screen: Screen) => void;
+}> = ({ onLock, showLock = true, dark = false, setCurrentScreen }) => (
   <div
     style={{
       display: "flex",
@@ -17,7 +19,14 @@ const Navbar: React.FC<{
       borderBottom: dark ? "1px solid #181a20" : "1px solid #eee",
     }}
   >
-    <img src={wallETIcon} alt="Wall-Et" style={{ width: 50, height: 50 }} />
+    <img
+      src={wallETIcon}
+      alt="Wall-ET"
+      style={{ width: 50, height: 50 }}
+      onClick={() => {
+        if (setCurrentScreen) setCurrentScreen("setup");
+      }}
+    />
     {showLock && (
       <button
         onClick={onLock}

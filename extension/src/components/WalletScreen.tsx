@@ -5,12 +5,14 @@ interface WalletScreenProps {
   onSendEth: () => void;
   onCreateNewWallet: () => void;
   onViewPrivateKey: () => void;
+  onUploadMultisig: () => void;
 }
 
 const WalletScreen: React.FC<WalletScreenProps> = ({
   onSendEth,
   onCreateNewWallet,
   onViewPrivateKey,
+  onUploadMultisig,
 }) => {
   const { wallet, address, clearWallet, getBalance } = useWallet();
   const [balance, setBalance] = useState<string>("");
@@ -38,7 +40,6 @@ const WalletScreen: React.FC<WalletScreenProps> = ({
   const copyToClipboard = async (text: string) => {
     try {
       await navigator.clipboard.writeText(text);
-      alert("Copied to clipboard!");
     } catch (error) {
       console.error("Failed to copy:", error);
     }
@@ -112,6 +113,13 @@ const WalletScreen: React.FC<WalletScreenProps> = ({
           </button>
           <button className="btn btn-secondary" onClick={handleClearWallet}>
             Clear Wallet
+          </button>
+          <button
+            className="btn btn-secondary"
+            onClick={onUploadMultisig}
+            style={{ marginTop: 12 }}
+          >
+            Upload Multisig Contract
           </button>
         </div>
       </div>

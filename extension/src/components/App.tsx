@@ -10,6 +10,8 @@ import PasswordSetupScreen from "./PasswordSetupScreen";
 import PasswordUnlockScreen from "./PasswordUnlockScreen";
 import ViewPrivateKeyScreen from "./ViewPrivateKeyScreen";
 import Navbar from "./Navbar";
+import MultisigScreen from "./MultisigScreen";
+import { Screen } from "../types";
 
 const App = () => {
   const {
@@ -21,16 +23,7 @@ const App = () => {
     unlockWallet,
     lockWallet,
   } = useWallet();
-  const [currentScreen, setCurrentScreen] = useState<
-    | "setup"
-    | "password-setup"
-    | "import"
-    | "generated"
-    | "wallet"
-    | "send"
-    | "unlock"
-    | "view-private-key"
-  >("setup");
+  const [currentScreen, setCurrentScreen] = useState<Screen>("setup");
   const [generatedWalletData, setGeneratedWalletData] = useState<{
     privateKey: string;
     address: string;
@@ -115,36 +108,70 @@ const App = () => {
       case "wallet":
         return (
           <>
-            <Navbar onLock={handleLock} dark showLock />
+            <Navbar
+              onLock={handleLock}
+              dark
+              showLock
+              setCurrentScreen={setCurrentScreen}
+            />
             <WalletScreen
               onSendEth={() => setCurrentScreen("send")}
               onCreateNewWallet={() => setCurrentScreen("password-setup")}
               onViewPrivateKey={() => setCurrentScreen("view-private-key")}
+              onUploadMultisig={() => setCurrentScreen("multisig")}
             />
           </>
         );
       case "send":
         return (
           <>
-            <Navbar onLock={handleLock} dark showLock />
+            <Navbar
+              onLock={handleLock}
+              dark
+              showLock
+              setCurrentScreen={setCurrentScreen}
+            />
             <SendScreen onBack={() => setCurrentScreen("wallet")} />
           </>
         );
       case "view-private-key":
         return (
           <>
-            <Navbar onLock={handleLock} dark showLock />
+            <Navbar
+              onLock={handleLock}
+              dark
+              showLock
+              setCurrentScreen={setCurrentScreen}
+            />
             <ViewPrivateKeyScreen onBack={() => setCurrentScreen("wallet")} />
+          </>
+        );
+      case "multisig":
+        return (
+          <>
+            <Navbar
+              onLock={handleLock}
+              dark
+              showLock
+              setCurrentScreen={setCurrentScreen}
+            />
+            <MultisigScreen onBack={() => setCurrentScreen("wallet")} />
           </>
         );
       default:
         return (
           <>
-            <Navbar onLock={handleLock} dark showLock />
+            <Navbar
+              onLock={handleLock}
+              dark
+              showLock
+              setCurrentScreen={setCurrentScreen}
+            />
             <WalletScreen
               onSendEth={() => setCurrentScreen("send")}
               onCreateNewWallet={() => setCurrentScreen("password-setup")}
               onViewPrivateKey={() => setCurrentScreen("view-private-key")}
+              onUploadMultisig={() => setCurrentScreen("multisig")}
             />
           </>
         );
@@ -155,7 +182,7 @@ const App = () => {
   if (isPasswordSet && !wallet) {
     return (
       <>
-        <Navbar dark showLock={false} />
+        <Navbar dark showLock={false} setCurrentScreen={setCurrentScreen} />
         <PasswordUnlockScreen onUnlock={handleUnlock} />
       </>
     );
