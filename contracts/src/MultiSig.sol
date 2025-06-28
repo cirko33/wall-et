@@ -80,14 +80,15 @@ contract MultiSig {
         require(!transactionSigners[txHash][msg.sender], "Already signed");
         require(signers[msg.sender], "Only signers can sign");
 
+        transactionSigners[txHash][msg.sender] = true;
         transactions[txHash].signedCount++;
     }
     //execute
 
     function execute(bytes32 txHash) external {
         require(transactions[txHash].proposer != address(0), "Transaction not found");
-        require(transactions[txHash].balance >= transactions[txHash].amount, "Not enough balance");
         require(transactions[txHash].signedCount >= minSignatures, "Not enough signatures");
+        require(transactions[txHash].balance >= transactions[txHash].amount, "Not enough balance");
         require(!transactions[txHash].executed, "Transaction already executed");
         require(signers[msg.sender], "Only signers can execute");
 
