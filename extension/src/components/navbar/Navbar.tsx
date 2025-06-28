@@ -1,6 +1,6 @@
-import wallETIcon from "../../icons/wall-et.png";
+import wallETIcon from "../../../icons/wall-et-blue-nobg.png";
 import React from "react";
-import { Screen } from "../types";
+import { Screen } from "../../types";
 
 const Navbar: React.FC<{
   onLock?: () => void;

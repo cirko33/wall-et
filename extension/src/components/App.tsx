@@ -1,17 +1,19 @@
 import React, { useState, useEffect } from "react";
-import { useWallet } from "./WalletProvider";
-import SetupScreen from "./SetupScreen";
-import ImportScreen from "./ImportScreen";
-import GeneratedWalletScreen from "./GeneratedWalletScreen";
-import WalletScreen from "./WalletScreen";
-import SendScreen from "./SendScreen";
-import LoadingScreen from "./LoadingScreen";
-import PasswordSetupScreen from "./PasswordSetupScreen";
-import PasswordUnlockScreen from "./PasswordUnlockScreen";
-import ViewPrivateKeyScreen from "./ViewPrivateKeyScreen";
-import Navbar from "./Navbar";
-import MultisigScreen from "./MultisigScreen";
+import { useWallet } from "./providers/WalletProvider";
+import SetupScreen from "./screens/SetupScreen";
+import ImportScreen from "./screens/ImportScreen";
+import GeneratedWalletScreen from "./screens/GeneratedWalletScreen";
+import WalletScreen from "./screens/WalletScreen";
+import SendScreen from "./screens/SendScreen";
+import LoadingScreen from "./screens/LoadingScreen";
+import PasswordSetupScreen from "./screens/PasswordSetupScreen";
+import PasswordUnlockScreen from "./screens/PasswordUnlockScreen";
+import ViewPrivateKeyScreen from "./screens/ViewPrivateKeyScreen";
+import Navbar from "./navbar/Navbar";
+import MultisigScreen from "./screens/MultisigScreen";
 import { Screen } from "../types";
+import MultisigInteractScreen from "./screens/MultisigInteractScreen";
+import { MultisigContractProvider } from "./providers/MultisigContractProvider";
 
 const App = () => {
   const {
@@ -29,6 +31,8 @@ const App = () => {
     address: string;
   } | null>(null);
   const [pendingPassword, setPendingPassword] = useState<string>("");
+  const [currentContractAddress, setCurrentContractAddress] =
+    useState<string>("");
 
   // Set initial screen based on wallet state
   useEffect(() => {
@@ -104,78 +108,70 @@ const App = () => {
 
   // If wallet is loaded, show wallet screens
   if (wallet) {
+    let component: JSX.Element;
     switch (currentScreen) {
       case "wallet":
-        return (
-          <>
-            <Navbar
-              onLock={handleLock}
-              dark
-              showLock
-              setCurrentScreen={setCurrentScreen}
-            />
-            <WalletScreen
-              onSendEth={() => setCurrentScreen("send")}
-              onCreateNewWallet={() => setCurrentScreen("password-setup")}
-              onViewPrivateKey={() => setCurrentScreen("view-private-key")}
-              onUploadMultisig={() => setCurrentScreen("multisig")}
-            />
-          </>
+        component = (
+          <WalletScreen
+            onSendEth={() => setCurrentScreen("send")}
+            onCreateNewWallet={() => setCurrentScreen("password-setup")}
+            onViewPrivateKey={() => setCurrentScreen("view-private-key")}
+            onUploadMultisig={() => setCurrentScreen("multisig")}
+          />
         );
+        break;
       case "send":
-        return (
-          <>
-            <Navbar
-              onLock={handleLock}
-              dark
-              showLock
-              setCurrentScreen={setCurrentScreen}
-            />
-            <SendScreen onBack={() => setCurrentScreen("wallet")} />
-          </>
-        );
+        component = <SendScreen onBack={() => setCurrentScreen("wallet")} />;
+        break;
       case "view-private-key":
-        return (
-          <>
-            <Navbar
-              onLock={handleLock}
-              dark
-              showLock
-              setCurrentScreen={setCurrentScreen}
-            />
-            <ViewPrivateKeyScreen onBack={() => setCurrentScreen("wallet")} />
-          </>
+        component = (
+          <ViewPrivateKeyScreen onBack={() => setCurrentScreen("wallet")} />
         );
+        break;
       case "multisig":
-        return (
-          <>
-            <Navbar
-              onLock={handleLock}
-              dark
-              showLock
-              setCurrentScreen={setCurrentScreen}
-            />
-            <MultisigScreen onBack={() => setCurrentScreen("wallet")} />
-          </>
+        component = (
+          <MultisigScreen
+            onBack={() => setCurrentScreen("wallet")}
+            onOpenMultisigInteract={(addr: string) => {
+              setCurrentContractAddress(addr);
+              setCurrentScreen("multisig-interact");
+            }}
+          />
         );
+        break;
+      case "multisig-interact":
+        component = (
+          <MultisigContractProvider contractAddress={currentContractAddress}>
+            <MultisigInteractScreen
+              onBack={() => setCurrentScreen("wallet")}
+              contractAddress={currentContractAddress}
+            />
+          </MultisigContractProvider>
+        );
+        break;
       default:
-        return (
-          <>
-            <Navbar
-              onLock={handleLock}
-              dark
-              showLock
-              setCurrentScreen={setCurrentScreen}
-            />
-            <WalletScreen
-              onSendEth={() => setCurrentScreen("send")}
-              onCreateNewWallet={() => setCurrentScreen("password-setup")}
-              onViewPrivateKey={() => setCurrentScreen("view-private-key")}
-              onUploadMultisig={() => setCurrentScreen("multisig")}
-            />
-          </>
+        component = (
+          <WalletScreen
+            onSendEth={() => setCurrentScreen("send")}
+            onCreateNewWallet={() => setCurrentScreen("password-setup")}
+            onViewPrivateKey={() => setCurrentScreen("view-private-key")}
+            onUploadMultisig={() => setCurrentScreen("multisig")}
+          />
         );
+        break;
     }
+
+    return (
+      <>
+        <Navbar
+          onLock={handleLock}
+          dark
+          showLock
+          setCurrentScreen={setCurrentScreen}
+        />
+        {component}
+      </>
+    );
   }
 
   // If password is set but no wallet is loaded, show unlock screen

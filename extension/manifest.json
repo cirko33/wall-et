@@ -11,19 +11,19 @@
     "default_popup": "dist/popup.html",
     "default_title": "WALL-ET",
     "default_icon": {
-      "16": "icons/wall-et.png",
-      "32": "icons/wall-et.png",
-      "48": "icons/wall-et.png",
-      "128": "icons/wall-et.png"
+      "16": "icons/wall-et-blue.png",
+      "32": "icons/wall-et-blue.png",
+      "48": "icons/wall-et-blue.png",
+      "128": "icons/wall-et-blue.png"
     }
   },
   "background": {
     "service_worker": "dist/background.js"
   },
   "icons": {
-    "16": "icons/wall-et.png",
-    "32": "icons/wall-et.png",
-    "48": "icons/wall-et.png",
-    "128": "icons/wall-et.png"
+    "16": "icons/wall-et-blue-nobg.png",
+    "32": "icons/wall-et-blue-nobg.png",
+    "48": "icons/wall-et-blue-nobg.png",
+    "128": "icons/wall-et-blue-nobg.png"
   }
 }

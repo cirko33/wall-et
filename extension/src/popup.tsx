@@ -1,11 +1,11 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import { WalletProvider } from './components/WalletProvider';
-import App from './components/App';
-import './styles/App.css';
+import React from "react";
+import ReactDOM from "react-dom/client";
+import { WalletProvider } from "./components/providers/WalletProvider";
+import App from "./components/App";
+import "./styles/App.css";
 
 const root = ReactDOM.createRoot(
-  document.getElementById('root') as HTMLElement
+  document.getElementById("root") as HTMLElement
 );
 
 root.render(
@@ -14,4 +14,4 @@ root.render(
       <App />
     </WalletProvider>
   </React.StrictMode>
-); 
+);

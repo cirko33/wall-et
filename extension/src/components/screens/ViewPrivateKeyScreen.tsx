@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useWallet } from "./WalletProvider";
+import { useWallet } from "../providers/WalletProvider";
 import CryptoJS from "crypto-js";
 
 interface ViewPrivateKeyScreenProps {

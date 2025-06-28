@@ -7,4 +7,5 @@ export type Screen =
   | "send"
   | "unlock"
   | "view-private-key"
-  | "multisig";
+  | "multisig"
+  | "multisig-interact";

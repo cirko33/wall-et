@@ -1,7 +1,7 @@
 {
-  "name": "wall-e-wallet",
+  "name": "wall-et",
   "version": "1.0.0",
-  "description": "Ethereum Wallet",
+  "description": "Best wallet for Ethereum",
   "main": "dist/popup.js",
   "scripts": {
     "build": "webpack --config webpack.config.js",
@@ -19,7 +19,7 @@
     "cryptocurrency",
     "react"
   ],
-  "author": "Your Name",
+  "author": "Cirko & Stojko",
   "license": "MIT",
   "dependencies": {
     "@types/crypto-js": "^4.2.2",

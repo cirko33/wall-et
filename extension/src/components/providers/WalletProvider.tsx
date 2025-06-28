@@ -7,7 +7,7 @@ import React, {
 } from "react";
 import { ethers } from "ethers";
 import crypto from "crypto-js";
-import MultiSigJson from "../../contracts/MultiSig.json";
+import MultiSigJson from "../../../contracts/MultiSig.json";
 
 interface WalletContextType {
   wallet: ethers.Wallet | null;

@@ -1,16 +1,20 @@
 import React, { useState, useEffect } from "react";
 import { ethers } from "ethers";
-import { useWallet } from "./WalletProvider";
+import { useWallet } from "../providers/WalletProvider";
 import {
   addMultisigContract,
   getMultisigContracts,
-} from "../utils/multisigStorage";
+} from "../../utils/multisigStorage";
 
 interface MultisigScreenProps {
   onBack: () => void;
+  onOpenMultisigInteract: (addr: string) => void;
 }
 
-const MultisigScreen: React.FC<MultisigScreenProps> = ({ onBack }) => {
+const MultisigScreen: React.FC<MultisigScreenProps> = ({
+  onBack,
+  onOpenMultisigInteract,
+}) => {
   const [addresses, setAddresses] = useState<string[]>([""]);
   const [minSignatures, setMinSignatures] = useState<number>(1);
   const [error, setError] = useState<string>("");
@@ -227,12 +231,17 @@ const MultisigScreen: React.FC<MultisigScreenProps> = ({ onBack }) => {
 
         {savedMultisigs.length > 0 && (
           <div className="saved-multisigs" style={{ marginBottom: 24 }}>
-            <h3>Saved MultiSig Contracts</h3>
+            <h3>Saved MultiSig Contracts (click to interact)</h3>
             <ul>
               {savedMultisigs.map((addr, idx) => (
                 <li
                   key={addr}
-                  style={{ fontFamily: "monospace", fontSize: 14 }}
+                  style={{
+                    fontFamily: "monospace",
+                    fontSize: 14,
+                    cursor: "pointer",
+                  }}
+                  onClick={() => onOpenMultisigInteract(addr)}
                 >
                   {idx + 1}. {addr}
                 </li>

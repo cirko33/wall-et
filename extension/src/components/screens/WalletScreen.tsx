@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useWallet } from "./WalletProvider";
+import { useWallet } from "../providers/WalletProvider";
 
 interface WalletScreenProps {
   onSendEth: () => void;
