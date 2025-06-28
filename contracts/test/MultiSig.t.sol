@@ -359,4 +359,39 @@ contract MultiSigTest is Test {
         vm.expectRevert("Invalid token address");
         multiSig.propose(bob, 100 ether, address(0));
     }
+
+    function testGetBalanceForTxHash_ETH() public {
+        vm.prank(alice);
+        bytes32 txHash = multiSig.propose(bob, 1 ether);
+        multiSig.deposit{value: 1 ether}(txHash);
+        assertEq(multiSig.getBalance(txHash), 1 ether);
+    }
+
+    function testGetBalanceForTxHash_NonExistent() public view {
+        bytes32 fakeTxHash = keccak256(abi.encodePacked("fake"));
+        assertEq(multiSig.getBalance(fakeTxHash), 0);
+    }
+
+    function testGetBalanceForTxHash_ERC20() public {
+        vm.prank(alice);
+        bytes32 txHash = multiSig.propose(bob, 100 ether, address(erc20));
+        vm.prank(alice);
+        erc20.approve(address(multiSig), 100 ether);
+        vm.prank(alice);
+        multiSig.deposit(txHash, address(erc20), 100 ether);
+        assertEq(multiSig.getBalance(txHash), 100 ether);
+    }
+
+    function testGetBalanceForToken() public {
+        // Contract should have 0 tokens initially
+        assertEq(multiSig.getBalance(address(erc20)), 0);
+        // Deposit tokens
+        vm.prank(alice);
+        erc20.approve(address(multiSig), 50 ether);
+        vm.prank(alice);
+        bytes32 txHash = multiSig.propose(bob, 50 ether, address(erc20));
+        vm.prank(alice);
+        multiSig.deposit(txHash, address(erc20), 50 ether);
+        assertEq(multiSig.getBalance(address(erc20)), 50 ether);
+    }
 }
