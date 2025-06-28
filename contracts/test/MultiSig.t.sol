@@ -3,9 +3,11 @@ pragma solidity >=0.8.2 <0.9.0;
 
 import "../lib/forge-std/src/Test.sol";
 import "../src/MultiSig.sol";
+import "../lib/openzeppelin-contracts/contracts/mocks/token/ERC20Mock.sol";
 
 contract MultiSigTest is Test {
     MultiSig public multiSig;
+    ERC20Mock public erc20;
 
     address[] public signers;
     address public alice = address(0x1);
@@ -20,9 +22,11 @@ contract MultiSigTest is Test {
     function setUp() public {
         signers = [alice, bob, charlie, dave, eve];
         multiSig = new MultiSig(signers, minSignatures);
-
+        erc20 = new ERC20Mock();
         // Fund the contract with some ETH
         vm.deal(address(multiSig), 10 ether);
+        // Mint ERC20 tokens to Alice for testing
+        erc20.mint(alice, 1000 ether);
     }
 
     function testSetup() public view {
@@ -38,14 +42,25 @@ contract MultiSigTest is Test {
         vm.prank(alice);
         bytes32 txHash = multiSig.propose(bob, 3 ether);
 
-        (address to, uint256 amount, address proposer,, uint256 signedCount, bool executed, uint256 balance) =
-            multiSig.transactions(txHash);
+        (
+            address to,
+            bool native,
+            address token,
+            uint256 amount,
+            address proposer,
+            ,
+            uint256 signedCount,
+            bool executed,
+            uint256 balance
+        ) = multiSig.transactions(txHash);
         assertEq(to, bob);
         assertEq(amount, 3 ether);
         assertEq(proposer, alice);
         assertEq(signedCount, 0);
         assertFalse(executed);
         assertEq(balance, 0);
+        assertEq(native, true);
+        assertEq(token, address(0));
     }
 
     function test_RevertWhen_ExecuteNonExistentTransaction() public {
@@ -218,12 +233,12 @@ contract MultiSigTest is Test {
         multiSig.execute(txHash);
 
         // Verify execution
-        (,,,,, bool executed,) = multiSig.transactions(txHash);
+        (, , , , , , , bool executed, ) = multiSig.transactions(txHash);
         assertTrue(executed);
         assertEq(bob.balance, bobBalanceBefore + 3 ether);
     }
 
-    function test_GetBalance() public {
+    function test_GetBalance() public view {
         assertEq(multiSig.getBalance(), 10 ether);
     }
 
@@ -248,22 +263,22 @@ contract MultiSigTest is Test {
         vm.prank(alice);
         bytes32 txHash = multiSig.propose(bob, 1 ether);
 
-        (,,,, uint256 signedCount,,) = multiSig.transactions(txHash);
+        (, , , , , , uint256 signedCount, , ) = multiSig.transactions(txHash);
         assertEq(signedCount, 0);
 
         vm.prank(alice);
         multiSig.sign(txHash);
-        (,,,, signedCount,,) = multiSig.transactions(txHash);
+        (, , , , , , signedCount, , ) = multiSig.transactions(txHash);
         assertEq(signedCount, 1);
 
         vm.prank(bob);
         multiSig.sign(txHash);
-        (,,,, signedCount,,) = multiSig.transactions(txHash);
+        (, , , , , , signedCount, , ) = multiSig.transactions(txHash);
         assertEq(signedCount, 2);
 
         vm.prank(charlie);
         multiSig.sign(txHash);
-        (,,,, signedCount,,) = multiSig.transactions(txHash);
+        (, , , , , , signedCount, , ) = multiSig.transactions(txHash);
         assertEq(signedCount, 3);
     }
 
@@ -277,5 +292,71 @@ contract MultiSigTest is Test {
         multiSig.sign(txHash);
         assertTrue(multiSig.transactionSigners(txHash, alice));
         assertFalse(multiSig.transactionSigners(txHash, bob));
+    }
+
+    function testERC20_ProposeDepositSignExecute() public {
+        // Alice proposes an ERC20 transfer to Bob
+        vm.prank(alice);
+        bytes32 txHash = multiSig.propose(bob, 100 ether, address(erc20));
+        // Alice deposits tokens to the multisig for this tx
+        vm.prank(alice);
+        erc20.approve(address(multiSig), 100 ether);
+        vm.prank(alice);
+        multiSig.deposit(txHash, address(erc20), 100 ether);
+        // Get enough signatures
+        vm.prank(alice);
+        multiSig.sign(txHash);
+        vm.prank(bob);
+        multiSig.sign(txHash);
+        vm.prank(charlie);
+        multiSig.sign(txHash);
+        // Execute the transaction
+        uint256 bobBalanceBefore = erc20.balanceOf(bob);
+        vm.prank(alice);
+        multiSig.execute(txHash);
+        // Check execution
+        (, , , , , , , bool executed, ) = multiSig.transactions(txHash);
+        assertTrue(executed);
+        assertEq(erc20.balanceOf(bob), bobBalanceBefore + 100 ether);
+    }
+
+    function testERC20_RevertWhen_InsufficientTokenBalance() public {
+        // Alice proposes an ERC20 transfer to Bob
+        vm.prank(alice);
+        bytes32 txHash = multiSig.propose(bob, 100 ether, address(erc20));
+        // Only deposit 50 tokens
+        vm.prank(alice);
+        erc20.approve(address(multiSig), 50 ether);
+        vm.prank(alice);
+        multiSig.deposit(txHash, address(erc20), 50 ether);
+        // Get enough signatures
+        vm.prank(alice);
+        multiSig.sign(txHash);
+        vm.prank(bob);
+        multiSig.sign(txHash);
+        vm.prank(charlie);
+        multiSig.sign(txHash);
+        // Try to execute (should revert)
+        vm.prank(alice);
+        vm.expectRevert("Not enough balance");
+        multiSig.execute(txHash);
+    }
+
+    function testERC20_RevertWhen_ProposeByNonSigner() public {
+        vm.prank(nonSigner);
+        vm.expectRevert("Only signers can propose");
+        multiSig.propose(bob, 100 ether, address(erc20));
+    }
+
+    function testERC20_RevertWhen_ProposeToZeroAddress() public {
+        vm.prank(alice);
+        vm.expectRevert("Invalid target address");
+        multiSig.propose(address(0), 100 ether, address(erc20));
+    }
+
+    function testERC20_RevertWhen_ProposeWithZeroToken() public {
+        vm.prank(alice);
+        vm.expectRevert("Invalid token address");
+        multiSig.propose(bob, 100 ether, address(0));
     }
 }
