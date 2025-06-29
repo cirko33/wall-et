@@ -33,7 +33,7 @@ async function checkDelegationStatus(provider: ethers.JsonRpcProvider, address: 
   }
 }
 
-async function revokeDelegation(signer: ethers.Wallet) {
+export async function revokeDelegation(signer: ethers.Wallet) {
   console.log("\n=== REVOKING DELEGATION ===");
 
   const currentNonce = await signer.getNonce();
@@ -140,7 +140,7 @@ async function run() {
 
     await checkDelegationStatus(provider, signer.address);
     await createDelegation(signer, APPROVER_ADDRESS, RSDC_ADDRESS, MULTI_SIG_CONTRACT, APPROVAL_TX_HASH, 1);
-    // await revokeDelegation(signer);
+    await revokeDelegation(signer);
     await checkDelegationStatus(provider, signer.address);
   } catch (error) {
     console.error("Error in EIP-7702 transactions:", error);

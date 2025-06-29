@@ -1,6 +1,6 @@
 {
   "clientRemote": "",
-  "gitRemote": "",
+  "gitRemote": "https://github.com/cirko33/wall-e",
   "gitSha": "3e57f9b1c2a7697b7df04400d506c927d2bb8550",
   "treeEntries": [],
   "auditedFiles": [],

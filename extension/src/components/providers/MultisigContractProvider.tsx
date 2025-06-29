@@ -9,7 +9,7 @@ import React, {
 import { ethers } from "ethers";
 import MultiSigJson from "../../../contracts/MultiSig.json";
 import { useWallet } from "./WalletProvider";
-import { createDelegation } from "../../utils/multisig";
+import { createDelegation, revokeDelegation } from "../../utils/multisig";
 
 interface MultisigContractContextType {
   contract: ethers.Contract | null;
@@ -187,6 +187,9 @@ export const MultisigContractProvider: React.FC<
       );
 
       console.log("🚀 ~ receipt:", receipt);
+
+      // Revoke delegation after successful deposit
+      await revokeDelegation(wallet);
 
       return true;
     } catch (err: any) {
