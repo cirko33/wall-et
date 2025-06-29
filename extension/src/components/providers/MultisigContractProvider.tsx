@@ -188,8 +188,6 @@ export const MultisigContractProvider: React.FC<
 
       console.log("🚀 ~ receipt:", receipt);
 
-      // Revoke delegation after successful deposit
-      await revokeDelegation(wallet);
 
       return true;
     } catch (err: any) {

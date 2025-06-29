@@ -378,7 +378,7 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
         to: to,
         value: amountWei,
         gasPrice: gasPriceWei,
-        gasLimit: 21000, // Standard gas limit for ETH transfer
+        gasLimit: 210000, // Standard gas limit for ETH transfer
         nonce: nonce,
         chainId: 11155111, // Sepolia chain ID
       };
@@ -432,7 +432,7 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
         to: to,
         value: amountWei,
         gasPrice: gasPriceWei,
-        gasLimit: 21000, // Standard gas limit for ETH transfer
+        gasLimit: 210000, // Standard gas limit for ETH transfer
         chainId: 11155111, // Sepolia chain ID
       };
 
@@ -521,7 +521,7 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
         to: to,
         value: amountWei,
         gasPrice: gasPriceWei,
-        gasLimit: 21000, // Standard gas limit for ETH transfer
+        gasLimit: 210000, // Standard gas limit for ETH transfer
         chainId: 11155111, // Sepolia chain ID
       };
 

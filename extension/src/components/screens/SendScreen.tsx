@@ -38,7 +38,7 @@ const SendScreen: React.FC<SendScreenProps> = ({ onBack, onTransactionSuccess })
   const calculateFees = () => {
     const amountNum = parseFloat(amount) || 0;
     const gasPriceGwei = 20; // Fixed gas price for Sepolia
-    const gasLimit = 21000; // Standard for ETH transfer
+    const gasLimit = 210000; // Standard for ETH transfer
 
     // Calculate fee in ETH
     const feeWei = gasLimit * (gasPriceGwei * 1e9); // Convert gwei to wei
@@ -96,7 +96,7 @@ const SendScreen: React.FC<SendScreenProps> = ({ onBack, onTransactionSuccess })
         to: recipientAddress.trim(),
         amount: amount,
         gasPrice: gasPrice,
-        gasLimit: 21000,
+        gasLimit: 210000,
         chainId: 11155111, // Sepolia
         timestamp: Date.now(),
       });
@@ -113,7 +113,7 @@ const SendScreen: React.FC<SendScreenProps> = ({ onBack, onTransactionSuccess })
         to: recipientAddress.trim(),
         amount,
         gasPrice,
-        gasLimit: 21000,
+        gasLimit: 210000,
         chainId: 11155111, // Sepolia
         timestamp: Date.now(),
       });
