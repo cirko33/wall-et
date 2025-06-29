@@ -9,6 +9,7 @@ import LoadingScreen from "./screens/LoadingScreen";
 import PasswordSetupScreen from "./screens/PasswordSetupScreen";
 import PasswordUnlockScreen from "./screens/PasswordUnlockScreen";
 import ViewPrivateKeyScreen from "./screens/ViewPrivateKeyScreen";
+import SignOutScreen from "./screens/SignOutScreen";
 import Navbar from "./navbar/Navbar";
 import MultisigScreen from "./screens/MultisigScreen";
 import { Screen } from "../types";
@@ -119,8 +120,6 @@ const App = () => {
           <WalletScreen
             onSendEth={() => setCurrentScreen("send")}
             onSendErc20={() => setCurrentScreen("send-erc20")}
-            onCreateNewWallet={() => setCurrentScreen("password-setup")}
-            onViewPrivateKey={() => setCurrentScreen("view-private-key")}
             onUploadMultisig={() => setCurrentScreen("multisig")}
             onViewTokens={() => setCurrentScreen("tokens")}
             onViewAddressBook={() => setCurrentScreen("address-book")}
@@ -138,6 +137,11 @@ const App = () => {
       case "view-private-key":
         component = (
           <ViewPrivateKeyScreen onBack={() => setCurrentScreen("wallet")} />
+        );
+        break;
+      case "sign-out":
+        component = (
+          <SignOutScreen onBack={() => setCurrentScreen("wallet")} />
         );
         break;
       case "multisig":
@@ -174,8 +178,6 @@ const App = () => {
           <WalletScreen
             onSendEth={() => setCurrentScreen("send")}
             onSendErc20={() => setCurrentScreen("send-erc20")}
-            onCreateNewWallet={() => setCurrentScreen("password-setup")}
-            onViewPrivateKey={() => setCurrentScreen("view-private-key")}
             onUploadMultisig={() => setCurrentScreen("multisig")}
             onViewTokens={() => setCurrentScreen("tokens")}
             onViewAddressBook={() => setCurrentScreen("address-book")}
@@ -188,8 +190,10 @@ const App = () => {
       <>
         <Navbar
           onLock={handleLock}
+          onViewPrivateKey={() => setCurrentScreen("view-private-key")}
+          onSignOut={() => setCurrentScreen("sign-out")}
           dark
-          showLock
+          showMenu
           setCurrentScreen={setCurrentScreen}
         />
         {component}
@@ -201,7 +205,7 @@ const App = () => {
   if (isPasswordSet && !wallet) {
     return (
       <>
-        <Navbar dark showLock={false} setCurrentScreen={setCurrentScreen} />
+        <Navbar dark showMenu={false} setCurrentScreen={setCurrentScreen} />
         <PasswordUnlockScreen onUnlock={handleUnlock} />
       </>
     );

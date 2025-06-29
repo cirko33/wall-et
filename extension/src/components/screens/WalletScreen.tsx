@@ -5,8 +5,6 @@ import { MdContentCopy } from "react-icons/md";
 interface WalletScreenProps {
   onSendEth: () => void;
   onSendErc20: () => void;
-  onCreateNewWallet: () => void;
-  onViewPrivateKey: () => void;
   onUploadMultisig: () => void;
   onViewTokens: () => void;
   onViewAddressBook: () => void;
@@ -15,13 +13,11 @@ interface WalletScreenProps {
 const WalletScreen: React.FC<WalletScreenProps> = ({
   onSendEth,
   onSendErc20,
-  onCreateNewWallet,
-  onViewPrivateKey,
   onUploadMultisig,
   onViewTokens,
   onViewAddressBook,
 }) => {
-  const { wallet, address, clearWallet, getBalance } = useWallet();
+  const { wallet, address, getBalance } = useWallet();
   const [balance, setBalance] = useState<string>("");
   const [loadingBalance, setLoadingBalance] = useState<boolean>(false);
   const [copied, setCopied] = useState(false);
@@ -52,27 +48,6 @@ const WalletScreen: React.FC<WalletScreenProps> = ({
       setTimeout(() => setCopied(false), 1000);
     } catch (error) {
       console.error("Failed to copy:", error);
-    }
-  };
-
-  const handleClearWallet = async () => {
-    if (
-      confirm(
-        "Are you sure you want to clear this wallet? This action cannot be undone."
-      )
-    ) {
-      await clearWallet();
-    }
-  };
-
-  const handleCreateNewWallet = async () => {
-    if (
-      confirm(
-        "This will clear your current wallet and create a new one. Are you sure?"
-      )
-    ) {
-      await clearWallet();
-      onCreateNewWallet();
     }
   };
 
@@ -139,13 +114,6 @@ const WalletScreen: React.FC<WalletScreenProps> = ({
           >
             Send ERC20 Token
           </button>
-          <button className="btn btn-secondary" onClick={onViewPrivateKey}>
-            View Private Key
-          </button>
-          <button className="btn btn-secondary" onClick={handleClearWallet}>
-            Clear Wallet
-          </button>
-          <hr style={{ margin: "12px 0", borderColor: "#1d427d" }} />
           <button className="btn btn-secondary" onClick={onViewTokens}>
             View Tokens
           </button>
@@ -154,7 +122,7 @@ const WalletScreen: React.FC<WalletScreenProps> = ({
           </button>
           <hr className="hr-wallet" />
           <button className="btn btn-secondary" onClick={onUploadMultisig}>
-            Multisig Contract
+            Multisig Contracts Management
           </button>
         </div>
       </div>
