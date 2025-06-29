@@ -5,6 +5,7 @@ import {
   addMultisigContract,
   getMultisigContracts,
 } from "../../utils/multisigStorage";
+import { getAddressBook } from "../../utils/addressBookStorage";
 
 interface MultisigScreenProps {
   onBack: () => void;
@@ -24,9 +25,20 @@ const MultisigScreen: React.FC<MultisigScreenProps> = ({
   const [savedMultisigs, setSavedMultisigs] = useState<string[]>([]);
   const [customMultisig, setCustomMultisig] = useState<string>("");
   const [customMultisigError, setCustomMultisigError] = useState<string>("");
+  const [addressBook, setAddressBook] = useState<
+    { address: string; name: string }[]
+  >([]);
 
   useEffect(() => {
     setSavedMultisigs(getMultisigContracts());
+    // Load address book
+    const book = getAddressBook();
+    setAddressBook(
+      Object.entries(book).map(([address, name]) => ({
+        address,
+        name: String(name),
+      }))
+    );
   }, []);
 
   // Validate all addresses, including duplicates
@@ -183,6 +195,7 @@ const MultisigScreen: React.FC<MultisigScreenProps> = ({
                     placeholder={`Address #${idx + 1}`}
                     onChange={(e) => handleAddressChange(idx, e.target.value)}
                     disabled={isLoading}
+                    list="address-book-list"
                   />
                   {addresses.length > 1 && (
                     <button
@@ -203,6 +216,15 @@ const MultisigScreen: React.FC<MultisigScreenProps> = ({
                   )}
                 </div>
               ))}
+              <datalist id="address-book-list">
+                {addressBook.map(({ address, name }) => (
+                  <option
+                    value={address}
+                    key={address}
+                    label={name ? `${address} (${name})` : address}
+                  />
+                ))}
+              </datalist>
               <button
                 type="button"
                 className="btn btn-secondary"

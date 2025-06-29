@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-import "../lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./IMultiSig.sol";
 
 /**
@@ -16,7 +16,11 @@ contract Approver {
      * @param spender The address that will spend the tokens
      * @param amount The amount of tokens to approve
      */
-    function approveToken(address token, address spender, uint256 amount) public returns (bool) {
+    function approveToken(
+        address token,
+        address spender,
+        uint256 amount
+    ) public returns (bool) {
         require(token != address(0), "Invalid token address");
         require(spender != address(0), "Invalid spender address");
 
@@ -34,7 +38,12 @@ contract Approver {
      * @param token The ERC-20 token address
      * @param amount The amount of tokens to deposit
      */
-    function depositTokenToMultiSig(address multiSigAddress, bytes32 txHash, address token, uint256 amount) public {
+    function depositTokenToMultiSig(
+        address multiSigAddress,
+        bytes32 txHash,
+        address token,
+        uint256 amount
+    ) public {
         require(multiSigAddress != address(0), "Invalid MultiSig address");
         require(token != address(0), "Invalid token address");
         require(amount > 0, "Amount must be greater than 0");
@@ -49,11 +58,19 @@ contract Approver {
      * @param txHash The transaction hash for the deposit
      * @param depositAmount The amount of tokens to deposit to MultiSig
      */
-    function approveAndDeposit(address token, address multiSigAddress, bytes32 txHash, uint256 depositAmount)
-        external
-    {
+    function approveAndDeposit(
+        address token,
+        address multiSigAddress,
+        bytes32 txHash,
+        uint256 depositAmount
+    ) external {
         this.approveToken(token, multiSigAddress, depositAmount);
-        this.depositTokenToMultiSig(multiSigAddress, txHash, token, depositAmount);
+        this.depositTokenToMultiSig(
+            multiSigAddress,
+            txHash,
+            token,
+            depositAmount
+        );
     }
 
     /**
@@ -71,7 +88,10 @@ contract Approver {
      * @param spender The spender address
      * @return The allowance amount
      */
-    function getAllowance(address token, address spender) external view returns (uint256) {
+    function getAllowance(
+        address token,
+        address spender
+    ) external view returns (uint256) {
         return IERC20(token).allowance(address(this), spender);
     }
 }

@@ -6,6 +6,8 @@ import {
 } from "../providers/MultisigContractProvider";
 import { getMultisigTxs, addMultisigTx } from "../../utils/multisigStorage";
 import LoadingScreen from "./LoadingScreen";
+import { getTokenAddressBook } from "../../utils/tokenAddressBookStorage";
+import { getAddressBook } from "../../utils/addressBookStorage";
 
 interface MultisigInteractScreenProps {
   onBack: () => void;
@@ -70,6 +72,21 @@ const MultisigInteractScreen: React.FC<MultisigInteractScreenProps> = ({
   const [selectedTx, setSelectedTx] = useState<TransactionDataLocal | null>(
     null
   );
+
+  const [tokenAddressOptions, setTokenAddressOptions] = useState<
+    {
+      address: string;
+      name: string;
+      symbol: string;
+    }[]
+  >([]);
+
+  const [recipientOptions, setRecipientOptions] = useState<
+    {
+      address: string;
+      name: string;
+    }[]
+  >([]);
 
   const bigNumberishToString = (
     value: ethers.BigNumberish,
@@ -140,6 +157,29 @@ const MultisigInteractScreen: React.FC<MultisigInteractScreenProps> = ({
     }
   }, [selectedTxHash, txs]);
 
+  useEffect(() => {
+    // Load token address book for datalist
+    const tokenBook = getTokenAddressBook();
+    setTokenAddressOptions(
+      Object.entries(tokenBook).map(([address, info]) => ({
+        address,
+        name: info.name,
+        symbol: info.symbol,
+      }))
+    );
+  }, [contractAddress]);
+
+  useEffect(() => {
+    // Load recipient address book for datalist
+    const addressBook = getAddressBook();
+    setRecipientOptions(
+      Object.entries(addressBook).map(([address, name]) => ({
+        address,
+        name: String(name),
+      }))
+    );
+  }, [contractAddress]);
+
   // Handlers for each action
   const handlePropose = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -156,6 +196,7 @@ const MultisigInteractScreen: React.FC<MultisigInteractScreenProps> = ({
       }
       if (!txHash) throw new Error("Failed to propose transaction");
       addMultisigTx(contractAddress, txHash);
+      setTxHashes(getMultisigTxs(contractAddress));
       alert(`Proposed transaction with hash: ${txHash}`);
     } catch (err: any) {
       setError(err.message);
@@ -171,6 +212,16 @@ const MultisigInteractScreen: React.FC<MultisigInteractScreenProps> = ({
       return setError("Transaction ID and value required");
     setLoading(true);
     try {
+      // Save depositTxId if not already saved and valid
+      const existingTxs = getMultisigTxs(contractAddress);
+      if (!existingTxs.includes(depositTxId)) {
+        const txData = await getTransactionData(depositTxId);
+        if (txData) {
+          addMultisigTx(contractAddress, depositTxId);
+        } else {
+          throw new Error("Invalid transaction ID");
+        }
+      }
       if (depositType === "native") {
         await depositNative(depositTxId, ethers.parseEther(depositValue));
         alert("Native deposit successful");
@@ -183,6 +234,7 @@ const MultisigInteractScreen: React.FC<MultisigInteractScreenProps> = ({
         );
         alert("Token deposit successful");
       }
+      setTxHashes(getMultisigTxs(contractAddress));
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -196,8 +248,19 @@ const MultisigInteractScreen: React.FC<MultisigInteractScreenProps> = ({
     if (!txId) return setError("Transaction ID required");
     setLoading(true);
     try {
+      // Save txId if not already saved and valid
+      const existingTxs = getMultisigTxs(contractAddress);
+      if (!existingTxs.includes(txId)) {
+        const txData = await getTransactionData(txId);
+        if (txData) {
+          addMultisigTx(contractAddress, txId);
+        } else {
+          throw new Error("Invalid transaction ID");
+        }
+      }
       await sign(txId);
       alert("Transaction signed");
+      setTxHashes(getMultisigTxs(contractAddress));
       fetchTransactions();
     } catch (err: any) {
       setError(err.message);
@@ -212,8 +275,19 @@ const MultisigInteractScreen: React.FC<MultisigInteractScreenProps> = ({
     if (!txId) return setError("Transaction ID required");
     setLoading(true);
     try {
+      // Save txId if not already saved and valid
+      const existingTxs = getMultisigTxs(contractAddress);
+      if (!existingTxs.includes(txId)) {
+        const txData = await getTransactionData(txId);
+        if (txData) {
+          addMultisigTx(contractAddress, txId);
+        } else {
+          throw new Error("Invalid transaction ID");
+        }
+      }
       await execute(txId);
       alert("Transaction executed");
+      setTxHashes(getMultisigTxs(contractAddress));
       fetchTransactions();
     } catch (err: any) {
       setError(err.message);
@@ -329,7 +403,15 @@ const MultisigInteractScreen: React.FC<MultisigInteractScreenProps> = ({
                   value={to}
                   onChange={(e) => setTo(e.target.value)}
                   placeholder="0x..."
+                  list="recipient-address-list"
                 />
+                <datalist id="recipient-address-list">
+                  {recipientOptions.map((opt) => (
+                    <option value={opt.address} key={opt.address}>
+                      {opt.name} {opt.address ? `(${opt.address})` : ""}
+                    </option>
+                  ))}
+                </datalist>
               </div>
               <div className="form-group">
                 <label>
@@ -352,7 +434,15 @@ const MultisigInteractScreen: React.FC<MultisigInteractScreenProps> = ({
                     value={tokenAddress}
                     onChange={(e) => setTokenAddress(e.target.value)}
                     placeholder="0x..."
+                    list="token-address-list"
                   />
+                  <datalist id="token-address-list">
+                    {tokenAddressOptions.map((opt) => (
+                      <option value={opt.address} key={opt.address}>
+                        {opt.address} {opt.symbol ? `(${opt.symbol})` : ""}
+                      </option>
+                    ))}
+                  </datalist>
                 </div>
               )}
               <button className="btn btn-primary" type="submit">
@@ -418,7 +508,15 @@ const MultisigInteractScreen: React.FC<MultisigInteractScreenProps> = ({
                     value={depositTokenAddress}
                     onChange={(e) => setDepositTokenAddress(e.target.value)}
                     placeholder="0x..."
+                    list="token-address-list"
                   />
+                  <datalist id="token-address-list">
+                    {tokenAddressOptions.map((opt) => (
+                      <option value={opt.address} key={opt.address}>
+                        {opt.name} {opt.symbol ? `(${opt.symbol})` : ""}
+                      </option>
+                    ))}
+                  </datalist>
                 </div>
               )}
               <button className="btn btn-primary" type="submit">

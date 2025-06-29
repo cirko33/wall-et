@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useWallet } from "../providers/WalletProvider";
+import { MdContentCopy } from "react-icons/md";
 
 interface WalletScreenProps {
   onSendEth: () => void;
@@ -23,6 +24,7 @@ const WalletScreen: React.FC<WalletScreenProps> = ({
   const { wallet, address, clearWallet, getBalance } = useWallet();
   const [balance, setBalance] = useState<string>("");
   const [loadingBalance, setLoadingBalance] = useState<boolean>(false);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     const fetchBalance = async () => {
@@ -46,6 +48,8 @@ const WalletScreen: React.FC<WalletScreenProps> = ({
   const copyToClipboard = async (text: string) => {
     try {
       await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1000);
     } catch (error) {
       console.error("Failed to copy:", error);
     }
@@ -104,8 +108,22 @@ const WalletScreen: React.FC<WalletScreenProps> = ({
               className="btn-icon"
               onClick={() => copyToClipboard(address)}
               title="Copy address"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                minWidth: 60,
+                justifyContent: "center",
+              }}
             >
-              Copy
+              {copied ? (
+                <span style={{ color: "green", fontWeight: 600 }}>Copied</span>
+              ) : (
+                <MdContentCopy
+                  size={20}
+                  color="#1d427d"
+                  style={{ marginRight: 4 }}
+                />
+              )}
             </button>
           </div>
         </div>
@@ -127,12 +145,16 @@ const WalletScreen: React.FC<WalletScreenProps> = ({
           <button className="btn btn-secondary" onClick={handleClearWallet}>
             Clear Wallet
           </button>
-          <button
-            className="btn btn-secondary"
-            onClick={onUploadMultisig}
-            style={{ marginTop: 12 }}
-          >
-            Multisig Contracts
+          <hr style={{ margin: "12px 0", borderColor: "#1d427d" }} />
+          <button className="btn btn-secondary" onClick={onViewTokens}>
+            View Tokens
+          </button>
+          <button className="btn btn-secondary" onClick={onViewAddressBook}>
+            View Address Book
+          </button>
+          <hr style={{ margin: "12px 0", borderColor: "#1d427d" }} />
+          <button className="btn btn-secondary" onClick={onUploadMultisig}>
+            Multisig Contract
           </button>
         </div>
       </div>
