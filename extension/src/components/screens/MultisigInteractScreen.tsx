@@ -1,11 +1,19 @@
 import React, { useState, useEffect } from "react";
 import { ethers } from "ethers";
-import { useMultisigContract } from "../providers/MultisigContractProvider";
+import {
+  TransactionData,
+  useMultisigContract,
+} from "../providers/MultisigContractProvider";
 import { getMultisigTxs, addMultisigTx } from "../../utils/multisigStorage";
+import LoadingScreen from "./LoadingScreen";
 
 interface MultisigInteractScreenProps {
   onBack: () => void;
   contractAddress: string;
+}
+
+interface TransactionDataLocal extends TransactionData {
+  hash: string;
 }
 
 const MultisigInteractScreen: React.FC<MultisigInteractScreenProps> = ({
@@ -27,7 +35,7 @@ const MultisigInteractScreen: React.FC<MultisigInteractScreenProps> = ({
   >("propose");
   const [proposeType, setProposeType] = useState<"native" | "token">("native");
   const [depositType, setDepositType] = useState<"native" | "token">("native");
-  const [txs, setTxs] = useState<any[]>([]); // Transactions with details
+  const [txs, setTxs] = useState<TransactionDataLocal[]>([]); // Transactions with details
   const [error, setError] = useState("");
 
   // Propose form state
@@ -43,6 +51,10 @@ const MultisigInteractScreen: React.FC<MultisigInteractScreenProps> = ({
   // Sign/Execute form state
   const [txId, setTxId] = useState("");
 
+  const [loading, setLoading] = useState(false);
+
+  const [txHashes, setTxHashes] = useState<string[]>([]);
+
   // Fetch transaction details for all hashes in local storage
   const fetchTransactions = async () => {
     const hashes = getMultisigTxs(contractAddress);
@@ -52,11 +64,13 @@ const MultisigInteractScreen: React.FC<MultisigInteractScreenProps> = ({
         return data ? { hash, ...data } : null;
       })
     );
-    setTxs(details.filter(Boolean));
+
+    setTxs(details.filter(Boolean) as TransactionDataLocal[]);
   };
 
   useEffect(() => {
     fetchTransactions();
+    setTxHashes(getMultisigTxs(contractAddress));
     // eslint-disable-next-line
   }, [contractAddress]);
 
@@ -72,6 +86,7 @@ const MultisigInteractScreen: React.FC<MultisigInteractScreenProps> = ({
     e.preventDefault();
     setError("");
     if (!to || !value) return setError("Recipient and value required");
+    setLoading(true);
     try {
       let txHash: string | null = null;
       if (proposeType === "native") {
@@ -89,6 +104,8 @@ const MultisigInteractScreen: React.FC<MultisigInteractScreenProps> = ({
       alert(`Proposed transaction with hash: ${txHash}`);
     } catch (err: any) {
       setError(err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -97,6 +114,7 @@ const MultisigInteractScreen: React.FC<MultisigInteractScreenProps> = ({
     setError("");
     if (!depositTxId || !depositValue)
       return setError("Transaction ID and value required");
+    setLoading(true);
     try {
       if (depositType === "native") {
         await depositNative(depositTxId, ethers.utils.parseEther(depositValue));
@@ -112,6 +130,8 @@ const MultisigInteractScreen: React.FC<MultisigInteractScreenProps> = ({
       }
     } catch (err: any) {
       setError(err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -119,12 +139,15 @@ const MultisigInteractScreen: React.FC<MultisigInteractScreenProps> = ({
     e.preventDefault();
     setError("");
     if (!txId) return setError("Transaction ID required");
+    setLoading(true);
     try {
       await sign(txId);
       alert("Transaction signed");
       fetchTransactions();
     } catch (err: any) {
       setError(err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -132,17 +155,41 @@ const MultisigInteractScreen: React.FC<MultisigInteractScreenProps> = ({
     e.preventDefault();
     setError("");
     if (!txId) return setError("Transaction ID required");
+    setLoading(true);
     try {
       await execute(txId);
       alert("Transaction executed");
       fetchTransactions();
     } catch (err: any) {
       setError(err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="container">
+    <div className="container" style={{ position: "relative" }}>
+      {loading && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100vw",
+            height: "100vh",
+            background: "rgba(0,0,0,0.5)",
+            zIndex: 9999,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <div className="loading-content">
+            <div className="spinner"></div>
+            <p>Waiting for transaction...</p>
+          </div>
+        </div>
+      )}
       <div className="screen">
         <div className="multisig-content">
           <h2>Interact with MultiSig Contract</h2>
@@ -287,7 +334,13 @@ const MultisigInteractScreen: React.FC<MultisigInteractScreenProps> = ({
                   value={depositTxId}
                   onChange={(e) => setDepositTxId(e.target.value)}
                   placeholder="Transaction ID"
+                  list="deposit-txid-list"
                 />
+                <datalist id="deposit-txid-list">
+                  {txHashes.map((hash) => (
+                    <option value={hash} key={hash} />
+                  ))}
+                </datalist>
               </div>
               <div className="form-group">
                 <label>
@@ -328,7 +381,13 @@ const MultisigInteractScreen: React.FC<MultisigInteractScreenProps> = ({
                   value={txId}
                   onChange={(e) => setTxId(e.target.value)}
                   placeholder="Transaction ID"
+                  list="sign-txid-list"
                 />
+                <datalist id="sign-txid-list">
+                  {txHashes.map((hash) => (
+                    <option value={hash} key={hash} />
+                  ))}
+                </datalist>
               </div>
               <button className="btn btn-primary" type="submit">
                 Sign
@@ -345,7 +404,13 @@ const MultisigInteractScreen: React.FC<MultisigInteractScreenProps> = ({
                   value={txId}
                   onChange={(e) => setTxId(e.target.value)}
                   placeholder="Transaction ID"
+                  list="execute-txid-list"
                 />
+                <datalist id="execute-txid-list">
+                  {txHashes.map((hash) => (
+                    <option value={hash} key={hash} />
+                  ))}
+                </datalist>
               </div>
               <button className="btn btn-primary" type="submit">
                 Execute
@@ -361,15 +426,22 @@ const MultisigInteractScreen: React.FC<MultisigInteractScreenProps> = ({
                 <ul>
                   {txs.map((tx, idx) => (
                     <li
-                      key={tx.hash}
+                      key={idx}
                       style={{ fontFamily: "monospace", fontSize: 14 }}
                     >
                       <div>Hash: {tx.hash}</div>
                       <div>To: {tx.to}</div>
-                      <div>Amount: {tx.amount?.toString?.()}</div>
+                      <div>Amount: {tx.amount.toNumber()}</div>
                       <div>Proposer: {tx.proposer}</div>
-                      <div>Signed: {tx.signedCount}</div>
+                      <div>Signed: {tx.signedCount.toNumber()}</div>
                       <div>Executed: {tx.executed ? "Yes" : "No"}</div>
+                      <div>Balance: {tx.balance.toNumber()}</div>
+                      <div>Timestamp: {tx.timestamp.toNumber()}</div>
+                      {tx.native ? (
+                        <div>Native: Yes</div>
+                      ) : (
+                        <div>Token: {tx.token}</div>
+                      )}
                     </li>
                   ))}
                 </ul>
@@ -377,6 +449,42 @@ const MultisigInteractScreen: React.FC<MultisigInteractScreenProps> = ({
             </div>
           )}
         </div>
+      </div>
+      <div
+        style={{
+          marginTop: 32,
+          padding: 16,
+          background: "#0f1419",
+          borderRadius: 8,
+          border: "1px solid #334155",
+        }}
+      >
+        <h4 style={{ color: "#fff", marginBottom: 8 }}>
+          All Transaction Hashes
+        </h4>
+        {txHashes.length === 0 ? (
+          <div style={{ color: "#94a3b8" }}>No transaction hashes found.</div>
+        ) : (
+          <ul
+            style={{
+              fontFamily: "monospace",
+              fontSize: 13,
+              color: "#94a3b8",
+              margin: 0,
+              padding: 0,
+              listStyle: "none",
+            }}
+          >
+            {txHashes.map((hash) => (
+              <li
+                key={hash}
+                style={{ wordBreak: "break-all", marginBottom: 4 }}
+              >
+                {hash}
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
     </div>
   );

@@ -46,16 +46,16 @@ interface MultisigContractProviderProps {
   children: ReactNode;
 }
 
-interface TransactionData {
+export interface TransactionData {
   to: string;
   native: boolean;
   token: string;
-  amount: ethers.BigNumberish;
+  amount: ethers.BigNumber;
   proposer: string;
-  timestamp: number;
-  signedCount: number;
+  timestamp: ethers.BigNumber;
+  signedCount: ethers.BigNumber;
   executed: boolean;
-  balance: ethers.BigNumberish;
+  balance: ethers.BigNumber;
 }
 
 export const MultisigContractProvider: React.FC<
@@ -92,7 +92,12 @@ export const MultisigContractProvider: React.FC<
       // Send the transaction
       const tx = await contract["propose(address,uint256)"](to, amount);
       const receipt = await tx.wait();
-      return receipt.events?.[0]?.args?.data;
+      if (receipt.status !== 1) {
+        throw new Error("Transaction failed with status: " + receipt.status);
+      }
+
+      console.log(receipt);
+      return receipt.events[0].data;
     } catch (err: any) {
       setError(err.message);
       return null;
@@ -112,7 +117,11 @@ export const MultisigContractProvider: React.FC<
         token
       );
       const receipt = await tx.wait();
-      return receipt.events?.[0]?.args?.data;
+      if (receipt.status !== 1) {
+        throw new Error("Transaction failed with status: " + receipt.status);
+      }
+      console.log(receipt);
+      return receipt.events[0].data;
     } catch (err: any) {
       setError(err.message);
       return null;

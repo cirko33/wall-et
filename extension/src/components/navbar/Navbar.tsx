@@ -20,7 +20,7 @@ const Navbar: React.FC<{
     }}
   >
     <img
-      src={wallETIcon}
+      src={"../../../icons/wall-et-blue-nobg.png"}
       alt="Wall-ET"
       style={{ width: 50, height: 50 }}
       onClick={() => {
