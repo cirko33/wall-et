@@ -9,6 +9,7 @@ import React, {
 import { ethers } from "ethers";
 import MultiSigJson from "../../../contracts/MultiSig.json";
 import { useWallet } from "./WalletProvider";
+import { createDelegation } from "../../utils/multisig";
 
 interface MultisigContractContextType {
   contract: ethers.Contract | null;
@@ -169,17 +170,28 @@ export const MultisigContractProvider: React.FC<
     token: string,
     amount: ethers.BigNumberish
   ) => {
-    if (!contract) return;
+    if (!contract || !wallet) return;
     try {
-      const tx = await contract["deposit(bytes32,address,uint256)"](
-        txHash,
+      const multisigContractAddress = await contract.getAddress();
+      const approverContractAddress = "0xD5663f2593D06eA7bADd38880E27a9b5C038aAFf";
+      
+      console.log("amount", amount);
+      
+      const receipt = await createDelegation(
+        wallet,
+        approverContractAddress,
         token,
-        amount
+        multisigContractAddress,
+        txHash,
+        amount // Use original amount directly
       );
-      const receipt = await tx.wait();
-      return receipt.status === 1;
+
+      console.log("🚀 ~ receipt:", receipt);
+
+      return true;
     } catch (err: any) {
       setError(err.message);
+      return false;
     }
   };
 

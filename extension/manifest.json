@@ -3,10 +3,7 @@
   "name": "WALL-ET",
   "version": "1.0.0",
   "description": "A secure Ethereum Sepolia testnet wallet extension",
-  "permissions": [
-    "storage",
-    "activeTab"
-  ],
+  "permissions": ["storage", "activeTab"],
   "action": {
     "default_popup": "dist/popup.html",
     "default_title": "WALL-ET",

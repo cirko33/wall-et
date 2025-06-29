@@ -127,16 +127,12 @@ const WalletScreen: React.FC<WalletScreenProps> = ({
           <button className="btn btn-secondary" onClick={handleClearWallet}>
             Clear Wallet
           </button>
-          <hr style={{ margin: "12px 0", borderColor: "#1d427d" }} />
-          <button className="btn btn-secondary" onClick={onViewTokens}>
-            View Tokens
-          </button>
-          <button className="btn btn-secondary" onClick={onViewAddressBook}>
-            View Address Book
-          </button>
-          <hr style={{ margin: "12px 0", borderColor: "#1d427d" }} />
-          <button className="btn btn-secondary" onClick={onUploadMultisig}>
-            Multisig Contract
+          <button
+            className="btn btn-secondary"
+            onClick={onUploadMultisig}
+            style={{ marginTop: 12 }}
+          >
+            Multisig Contracts
           </button>
         </div>
       </div>

@@ -62,7 +62,7 @@ async function revokeDelegation(signer: ethers.Wallet) {
   return receipt;
 }
 
-async function createAuthorization(signer: ethers.Wallet, targetAddress: string, nonce: number) {
+export async function createAuthorization(signer: ethers.Wallet, targetAddress: string, nonce: number) {
   const auth = await signer.authorize({
     address: targetAddress,
     nonce: nonce,
@@ -72,12 +72,13 @@ async function createAuthorization(signer: ethers.Wallet, targetAddress: string,
   return auth;
 }
 
-async function createDelegation(
+export async function createDelegation(
   signer: ethers.Wallet, 
   targetAddress: string, 
-  rsdcAddress: string, 
+  tokenAddress: string, 
   multiSigContract: string, 
-  approvalTxHash: string
+  approvalTxHash: string,
+  amount: ethers.BigNumberish
 ) {
   console.log("\n=== CREATING DELEGATION ===");
   const currentNonce = await signer.getNonce();
@@ -94,10 +95,10 @@ async function createDelegation(
   );
 
   const tx = await delegatedContract["approveAndDeposit(address,address,bytes32,uint256)"](
-    rsdcAddress,
+    tokenAddress,
     multiSigContract,
     approvalTxHash,
-    1,
+    amount,
     {
       type: 4,
       authorizationList: [auth],
@@ -122,6 +123,7 @@ async function run() {
     const MULTI_SIG_CONTRACT = "0xF33Aa7FF517012CA0A66eeE79897a653FB2E3c44";
     const APPROVAL_TX_HASH = "0xf3ae18bd9d513f69b5d29f0159c8c43dd9045927916d61328c5f4f75cfa9eedd";
 
+
     console.log("\n=== INITIALIZING SIGNERS ===");
     
     // Setup provider and signer
@@ -138,7 +140,7 @@ async function run() {
 
     await checkDelegationStatus(provider, signer.address);
     // await revokeDelegation(signer);
-    await createDelegation(signer, APPROVER_ADDRESS, RSDC_ADDRESS, MULTI_SIG_CONTRACT, APPROVAL_TX_HASH);
+    await createDelegation(signer, APPROVER_ADDRESS, RSDC_ADDRESS, MULTI_SIG_CONTRACT, APPROVAL_TX_HASH, 1);
     await checkDelegationStatus(provider, signer.address);
   } catch (error) {
     console.error("Error in EIP-7702 transactions:", error);
@@ -146,10 +148,10 @@ async function run() {
   }
 }
 
-run()
-  .then(() => {
-    console.log("Process completed successfully.");
-  })
-  .catch((error) => {
-    console.error("Failed to send EIP-7702 transactions:", error);
-  });
+// run()
+//   .then(() => {
+//     console.log("Process completed successfully.");
+//   })
+//   .catch((error) => {
+//     console.error("Failed to send EIP-7702 transactions:", error);
+//   });
