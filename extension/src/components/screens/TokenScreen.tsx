@@ -37,7 +37,6 @@ const TokenScreen: React.FC<TokenScreenProps> = ({ onBack }) => {
       for (const { address, info } of tokens) {
         try {
           const bal = await getTokenBalance(address);
-          console.log("🚀 ~ fetchBalances ~ bal:", bal);
           if (bal !== null) {
             // Format balance using decimals
             const formatted = (
@@ -99,7 +98,7 @@ const TokenScreen: React.FC<TokenScreenProps> = ({ onBack }) => {
       <div className="token-content">
         <h2>Tokens</h2>
         <form onSubmit={handleAddToken}>
-          <div className="form-group" style={{ marginBottom: 0 }}>
+          <div className="form-group margin-bottom-0">
             <label htmlFor="token-address">Token Address:</label>
             <input
               type="text"
@@ -111,12 +110,8 @@ const TokenScreen: React.FC<TokenScreenProps> = ({ onBack }) => {
               onChange={handleInputChange}
             />
           </div>
-          {error && (
-            <div className="warning" style={{ marginTop: 4 }}>
-              {error}
-            </div>
-          )}
-          <div className="button-group" style={{ marginTop: 12 }}>
+          {error && <div className="warning margin-top-4">{error}</div>}
+          <div className="button-group margin-top-12">
             <button
               className="btn btn-primary"
               type="submit"
@@ -133,11 +128,11 @@ const TokenScreen: React.FC<TokenScreenProps> = ({ onBack }) => {
             </button>
           </div>
         </form>
-        <div style={{ marginTop: 24 }}>
+        <div className="margin-top-24">
           {tokens.length === 0 ? (
             <div>No tokens in address book.</div>
           ) : (
-            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            <div className="flex-col-gap-12">
               {tokens.map(({ address, info }) => (
                 <TokenChip
                   key={address}
@@ -174,38 +169,15 @@ const TokenChip: React.FC<{
   return (
     <div
       onClick={handleCopy}
-      style={{
-        width: "100%",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        background: "#1976d2",
-        borderRadius: 16,
-        padding: "16px 20px",
-        boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
-        cursor: "pointer",
-        border: copied ? "2px solid #4caf50" : "2px solid transparent",
-        transition: "border 0.2s",
-        position: "relative",
-      }}
+      className={`token-chip${copied ? " copied" : ""}`}
       title="Click to copy address"
     >
-      <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-        <span style={{ fontWeight: 600, fontSize: 18, color: "#fff" }}>
-          {symbol}
-        </span>
-        <span style={{ color: "#bbdefb", fontSize: 14 }}>{name}</span>
+      <div className="flex-col-gap-2">
+        <span className="token-chip-symbol">{symbol}</span>
+        <span className="token-chip-name">{name}</span>
       </div>
-      <div style={{ fontWeight: 500, fontSize: 16, color: "#fff" }}>
-        {balance}
-      </div>
-      <div
-        style={{
-          marginLeft: 18,
-          fontSize: 12,
-          color: copied ? "#4caf50" : "#e3f2fd",
-        }}
-      >
+      <div className="token-chip-balance">{balance}</div>
+      <div className={`token-chip-address${copied ? " copied" : ""}`}>
         {copied ? "Copied!" : address.slice(0, 6) + "..." + address.slice(-4)}
       </div>
     </div>

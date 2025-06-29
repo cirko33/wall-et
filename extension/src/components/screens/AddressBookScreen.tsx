@@ -78,7 +78,7 @@ const AddressBookScreen: React.FC<AddressBookScreenProps> = ({ onBack }) => {
       <div className="token-content">
         <h2>Address Book</h2>
         <form onSubmit={handleAdd}>
-          <div className="form-group" style={{ marginBottom: 0 }}>
+          <div className="form-group margin-bottom-0">
             <label htmlFor="recipient-address">Recipient Address:</label>
             <input
               type="text"
@@ -89,7 +89,7 @@ const AddressBookScreen: React.FC<AddressBookScreenProps> = ({ onBack }) => {
               value={newEntry.address}
               onChange={handleInputChange}
             />
-            <label htmlFor="recipient-name" style={{ marginTop: 8 }}>
+            <label htmlFor="recipient-name" className="margin-top-8">
               Name:
             </label>
             <input
@@ -102,12 +102,8 @@ const AddressBookScreen: React.FC<AddressBookScreenProps> = ({ onBack }) => {
               onChange={handleInputChange}
             />
           </div>
-          {error && (
-            <div className="warning" style={{ marginTop: 4 }}>
-              {error}
-            </div>
-          )}
-          <div className="button-group" style={{ marginTop: 12 }}>
+          {error && <div className="warning margin-top-4">{error}</div>}
+          <div className="button-group margin-top-12">
             <button className="btn btn-primary" type="submit">
               Add Recipient
             </button>
@@ -120,7 +116,7 @@ const AddressBookScreen: React.FC<AddressBookScreenProps> = ({ onBack }) => {
             </button>
           </div>
         </form>
-        <div style={{ marginTop: 24 }}>
+        <div className="margin-top-24">
           {addresses.length === 0 ? (
             <div>No addresses in address book.</div>
           ) : (
@@ -131,26 +127,9 @@ const AddressBookScreen: React.FC<AddressBookScreenProps> = ({ onBack }) => {
                   onClick={() => {
                     if (editing !== address) handleEdit(address, name);
                   }}
+                  className="flex-align-center-gap-10 bg-1976d2 border-radius-16 padding-10-20 box-shadow-1px-4px border-2px-transparent position-relative min-height-48 transition-bg-shadow"
                   style={{
-                    width: "100%",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 10,
-                    background: "#1976d2",
-                    borderRadius: 16,
-                    padding: "10px 14px",
-                    boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
-                    border: "2px solid transparent",
-                    position: "relative",
                     cursor: editing !== address ? "pointer" : "default",
-                    transition: "background 0.2s, box-shadow 0.2s",
-                    minHeight: 48,
-                    ...(editing !== address && {
-                      ":hover": {
-                        background: "#1565c0",
-                        boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
-                      },
-                    }),
                   }}
                 >
                   <div
@@ -163,75 +142,28 @@ const AddressBookScreen: React.FC<AddressBookScreenProps> = ({ onBack }) => {
                       overflow: "hidden",
                     }}
                   >
-                    <span
-                      style={{
-                        fontWeight: 600,
-                        fontSize: 16,
-                        color: "#fff",
-                        whiteSpace: "nowrap",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        maxWidth: "100%",
-                      }}
-                      title={address}
-                    >
+                    <span className="font-bold-16 ellipsis" title={address}>
                       {address}
                     </span>
                     {editing === address ? (
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 4,
-                          width: "100%",
-                        }}
-                      >
+                      <div className="flex-align-center-gap-4 width-100">
                         <input
                           type="text"
                           value={editName}
                           onChange={(e) => setEditName(e.target.value)}
-                          style={{
-                            fontSize: 14,
-                            padding: "4px 4px",
-                            borderRadius: 6,
-                            background: "#1565c0",
-                            color: "#fff",
-                            border: "1.5px solid #64b5f6",
-                            outline: "none",
-                            marginRight: 2,
-                            flex: 1,
-                            minWidth: 0,
-                            maxWidth: "160px",
-                          }}
+                          className="font-size-14 padding-2-4 border-radius-6 bg-1565c0 color-fff border-1-5px-64b5f6 margin-right-2 flex-1 min-width-0 max-width-160px"
                         />
                       </div>
                     ) : (
-                      <span
-                        style={{
-                          color: "#bbdefb",
-                          fontSize: 14,
-                          whiteSpace: "nowrap",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          maxWidth: "100%",
-                        }}
-                        title={name}
-                      >
+                      <span className="color-bbdefb ellipsis" title={name}>
                         {name}
                       </span>
                     )}
                   </div>
                   {editing === address && (
-                    <div
-                      style={{ display: "flex", alignItems: "center", gap: 4 }}
-                    >
+                    <div className="flex-align-center-gap-4">
                       <button
-                        className="btn btn-primary"
-                        style={{
-                          fontSize: 12,
-                          padding: "2px 4px",
-                          minWidth: 48,
-                        }}
+                        className="btn btn-primary font-size-12 padding-2-4 min-width-48"
                         onClick={(e) => {
                           e.stopPropagation();
                           handleEditSave(address);
@@ -241,12 +173,7 @@ const AddressBookScreen: React.FC<AddressBookScreenProps> = ({ onBack }) => {
                         Save
                       </button>
                       <button
-                        className="btn btn-secondary cancel-btn"
-                        style={{
-                          fontSize: 12,
-                          padding: "2px 4px",
-                          minWidth: 48,
-                        }}
+                        className="btn btn-secondary cancel-btn font-size-12 padding-2-4 min-width-48"
                         onClick={(e) => {
                           e.stopPropagation();
                           handleEditCancel();
@@ -256,12 +183,7 @@ const AddressBookScreen: React.FC<AddressBookScreenProps> = ({ onBack }) => {
                         Cancel
                       </button>
                       <button
-                        className="btn btn-secondary delete-btn"
-                        style={{
-                          fontSize: 12,
-                          padding: "2px 4px",
-                          minWidth: 48,
-                        }}
+                        className="btn btn-secondary delete-btn font-size-12 padding-2-4 min-width-48"
                         onClick={(e) => {
                           e.stopPropagation();
                           handleRemove(address);

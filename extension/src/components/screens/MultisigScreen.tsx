@@ -182,11 +182,7 @@ const MultisigScreen: React.FC<MultisigScreenProps> = ({
               {addresses.map((addr, idx) => (
                 <div
                   key={idx}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    marginBottom: 8,
-                  }}
+                  className="flex-align-center-gap-8 margin-bottom-8"
                 >
                   <input
                     type="text"
@@ -200,7 +196,7 @@ const MultisigScreen: React.FC<MultisigScreenProps> = ({
                   {addresses.length > 1 && (
                     <button
                       type="button"
-                      className="btn-icon"
+                      className="btn-icon margin-left-8"
                       style={{ marginLeft: 8 }}
                       onClick={() => handleRemoveAddress(idx)}
                       title="Remove address"
@@ -210,7 +206,7 @@ const MultisigScreen: React.FC<MultisigScreenProps> = ({
                     </button>
                   )}
                   {addressErrors[idx] && addr.trim() && (
-                    <span className="warning" style={{ marginLeft: 8 }}>
+                    <span className="warning margin-left-8">
                       {addressErrors[idx]}
                     </span>
                   )}
@@ -227,7 +223,7 @@ const MultisigScreen: React.FC<MultisigScreenProps> = ({
               </datalist>
               <button
                 type="button"
-                className="btn btn-secondary"
+                className="btn btn-secondary margin-top-8"
                 onClick={handleAddAddress}
                 style={{ marginTop: 8 }}
                 disabled={isLoading}
@@ -281,12 +277,12 @@ const MultisigScreen: React.FC<MultisigScreenProps> = ({
         </div>
 
         {/* Multisig Interact Section */}
-        <div className="multisig-interact" style={{ marginBottom: 24 }}>
+        <div className="multisig-interact margin-bottom-24">
           <h3>Interact with MultiSig Contract</h3>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div className="flex-align-center-gap-8">
             <input
               list="saved-multisigs-list"
-              className="input"
+              className="input width-340"
               placeholder="Enter or select multisig address"
               value={customMultisig}
               onChange={(e) => {
@@ -298,7 +294,6 @@ const MultisigScreen: React.FC<MultisigScreenProps> = ({
                 }
               }}
               disabled={isLoading}
-              style={{ width: 340 }}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   handleAddCustomMultisig();
@@ -320,29 +315,21 @@ const MultisigScreen: React.FC<MultisigScreenProps> = ({
             </button>
           </div>
           {customMultisigError && (
-            <div className="warning" style={{ marginTop: 4 }}>
-              {customMultisigError}
-            </div>
+            <div className="warning margin-top-4">{customMultisigError}</div>
           )}
         </div>
         {/* Saved Multisigs Management Section */}
         {savedMultisigs.length > 0 && (
-          <div className="saved-multisigs" style={{ marginBottom: 24 }}>
+          <div className="saved-multisigs margin-bottom-24">
             <h4>Saved MultiSig Contracts</h4>
-            <ul style={{ paddingLeft: 16 }}>
+            <ul className="padding-left-16">
               {savedMultisigs.map((addr, idx) => (
                 <li
                   key={addr}
-                  style={{
-                    fontFamily: "monospace",
-                    fontSize: 14,
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 8,
-                  }}
+                  className="font-monospace-14 flex-align-center-gap-8"
                 >
                   <span
-                    style={{ cursor: "pointer" }}
+                    className="cursor-pointer"
                     title="Open multisig"
                     onClick={() => onOpenMultisigInteract(addr)}
                   >
@@ -350,10 +337,9 @@ const MultisigScreen: React.FC<MultisigScreenProps> = ({
                   </span>
                   <button
                     type="button"
-                    className="btn-icon"
+                    className="btn-icon color-c00 margin-left-8"
                     title="Remove from saved"
                     onClick={() => handleRemoveSavedMultisig(addr)}
-                    style={{ color: "#c00", marginLeft: 8 }}
                   >
                     🗑️
                   </button>

@@ -83,8 +83,8 @@ const WalletScreen: React.FC<WalletScreenProps> = ({
   return (
     <div className="screen">
       <div className="wallet-content">
-        <div className="balance-section" style={{ marginBottom: "1em" }}>
-          <div style={{ fontWeight: "bold", fontSize: "1.2em" }}>
+        <div className="balance-section margin-bottom-1em">
+          <div className="font-bold-1-2em">
             Balance:{" "}
             {loadingBalance
               ? "Loading..."
@@ -105,7 +105,7 @@ const WalletScreen: React.FC<WalletScreenProps> = ({
               readOnly
             />
             <button
-              className="btn-icon"
+              className={`btn-icon ${copied ? "copy-copied" : undefined}`}
               onClick={() => copyToClipboard(address)}
               title="Copy address"
               style={{
@@ -121,7 +121,7 @@ const WalletScreen: React.FC<WalletScreenProps> = ({
                 <MdContentCopy
                   size={20}
                   color="#1d427d"
-                  style={{ marginRight: 4 }}
+                  className="copy-icon-margin"
                 />
               )}
             </button>
@@ -133,7 +133,7 @@ const WalletScreen: React.FC<WalletScreenProps> = ({
             Send ETH
           </button>
           <button
-            className="btn btn-primary"
+            className={`btn btn-primary margin-top-8`}
             onClick={onSendErc20}
             style={{ marginTop: 8 }}
           >
@@ -152,7 +152,7 @@ const WalletScreen: React.FC<WalletScreenProps> = ({
           <button className="btn btn-secondary" onClick={onViewAddressBook}>
             View Address Book
           </button>
-          <hr style={{ margin: "12px 0", borderColor: "#1d427d" }} />
+          <hr className="hr-wallet" />
           <button className="btn btn-secondary" onClick={onUploadMultisig}>
             Multisig Contract
           </button>

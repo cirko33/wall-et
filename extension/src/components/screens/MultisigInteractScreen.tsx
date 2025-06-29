@@ -297,22 +297,9 @@ const MultisigInteractScreen: React.FC<MultisigInteractScreenProps> = ({
   };
 
   return (
-    <div className="container" style={{ position: "relative" }}>
+    <div className="container position-relative">
       {loading && (
-        <div
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100vw",
-            height: "100vh",
-            background: "rgba(0,0,0,0.5)",
-            zIndex: 9999,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
+        <div className="fixed-fullscreen-overlay">
           <div className="loading-content">
             <div className="spinner"></div>
             <p>Waiting for transaction...</p>
@@ -330,7 +317,7 @@ const MultisigInteractScreen: React.FC<MultisigInteractScreenProps> = ({
               )}
             </label>
           </div>
-          <div className="button-group" style={{ margin: "16px 0" }}>
+          <div className="button-group margin-16-0">
             <button
               className={`btn${activeTab === "propose" ? " btn-primary" : ""}`}
               onClick={() => setActiveTab("propose")}
@@ -363,11 +350,7 @@ const MultisigInteractScreen: React.FC<MultisigInteractScreenProps> = ({
             >
               Transactions
             </button>
-            <button
-              className="btn btn-secondary"
-              style={{ float: "right" }}
-              onClick={onBack}
-            >
+            <button className="btn btn-secondary float-right" onClick={onBack}>
               Back
             </button>
           </div>
@@ -375,8 +358,8 @@ const MultisigInteractScreen: React.FC<MultisigInteractScreenProps> = ({
             <div className="warning">{error || contractError}</div>
           )}
           {activeTab === "propose" && (
-            <form onSubmit={handlePropose} style={{ marginTop: 16 }}>
-              <div style={{ marginBottom: 12 }}>
+            <form onSubmit={handlePropose} className="margin-top-16">
+              <div className="margin-bottom-12">
                 <label>
                   <input
                     type="radio"
@@ -451,8 +434,8 @@ const MultisigInteractScreen: React.FC<MultisigInteractScreenProps> = ({
             </form>
           )}
           {activeTab === "deposit" && (
-            <form onSubmit={handleDeposit} style={{ marginTop: 16 }}>
-              <div style={{ marginBottom: 12 }}>
+            <form onSubmit={handleDeposit} className="margin-top-16">
+              <div className="margin-bottom-12">
                 <label>
                   <input
                     type="radio"
@@ -525,7 +508,7 @@ const MultisigInteractScreen: React.FC<MultisigInteractScreenProps> = ({
             </form>
           )}
           {activeTab === "sign" && (
-            <form onSubmit={handleSign} style={{ marginTop: 16 }}>
+            <form onSubmit={handleSign} className="margin-top-16">
               <div className="form-group">
                 <label>Transaction ID:</label>
                 <input
@@ -548,7 +531,7 @@ const MultisigInteractScreen: React.FC<MultisigInteractScreenProps> = ({
             </form>
           )}
           {activeTab === "execute" && (
-            <form onSubmit={handleExecute} style={{ marginTop: 16 }}>
+            <form onSubmit={handleExecute} className="margin-top-16">
               <div className="form-group">
                 <label>Transaction ID:</label>
                 <input
@@ -571,7 +554,7 @@ const MultisigInteractScreen: React.FC<MultisigInteractScreenProps> = ({
             </form>
           )}
           {activeTab === "transactions" && (
-            <div style={{ marginTop: 16 }}>
+            <div className="margin-top-16">
               <h3>Transactions</h3>
               {txs.length === 0 ? (
                 <div>No transactions found.</div>
@@ -602,18 +585,8 @@ const MultisigInteractScreen: React.FC<MultisigInteractScreenProps> = ({
                     </select>
                   </div>
                   {selectedTx && (
-                    <div
-                      style={{
-                        fontFamily: "monospace",
-                        fontSize: 14,
-                        background: "#1e293b",
-                        padding: 12,
-                        borderRadius: 8,
-                      }}
-                    >
-                      <div style={{ wordBreak: "break-all" }}>
-                        Hash: {selectedTx.hash}
-                      </div>
+                    <div className="word-break-all margin-bottom-4">
+                      <div>Hash: {selectedTx.hash}</div>
                       <div>To: {selectedTx.to}</div>
                       <div>Amount: {selectedTx.amount}</div>
                       <div>Proposer: {selectedTx.proposer}</div>
@@ -634,36 +607,14 @@ const MultisigInteractScreen: React.FC<MultisigInteractScreenProps> = ({
           )}
         </div>
       </div>
-      <div
-        style={{
-          marginTop: 32,
-          padding: 16,
-          background: "#0f1419",
-          borderRadius: 8,
-          border: "1px solid #334155",
-        }}
-      >
-        <h4 style={{ color: "#fff", marginBottom: 8 }}>
-          All Transaction Hashes
-        </h4>
+      <div className="margin-top-32 padding-16 background-0f1419 border-radius-8 border-1px-solid-334155">
+        <h4 className="color-white margin-bottom-8">All Transaction Hashes</h4>
         {txHashes.length === 0 ? (
-          <div style={{ color: "#94a3b8" }}>No transaction hashes found.</div>
+          <div className="color-94a3b8">No transaction hashes found.</div>
         ) : (
-          <ul
-            style={{
-              fontFamily: "monospace",
-              fontSize: 13,
-              color: "#94a3b8",
-              margin: 0,
-              padding: 0,
-              listStyle: "none",
-            }}
-          >
+          <ul className="font-monospace font-size-13 color-94a3b8 margin-0 padding-0 list-style-none">
             {txHashes.map((hash) => (
-              <li
-                key={hash}
-                style={{ wordBreak: "break-all", marginBottom: 4 }}
-              >
+              <li key={hash} className="word-break-all margin-bottom-4">
                 {hash}
               </li>
             ))}
