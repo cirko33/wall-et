@@ -12,4 +12,7 @@ export type Screen =
   | "multisig-interact"
   | "tokens"
   | "address-book"
-  | "sign-out";
+  | "sign-out"
+  | "transaction-success"
+  | "multisig-deployment-success"
+  | "multisig-transaction-success";

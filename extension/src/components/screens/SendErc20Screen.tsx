@@ -12,9 +12,20 @@ import { useToken } from "../providers/TokenProvider";
 
 interface SendErc20ScreenProps {
   onBack: () => void;
+  onTransactionSuccess: (txData: {
+    txHash: string;
+    receipt: any;
+    from: string;
+    to: string;
+    amount: string;
+    gasPrice: string;
+    gasLimit: number;
+    chainId: number;
+    timestamp: number;
+  }) => void;
 }
 
-const SendErc20Screen: React.FC<SendErc20ScreenProps> = ({ onBack }) => {
+const SendErc20Screen: React.FC<SendErc20ScreenProps> = ({ onBack, onTransactionSuccess }) => {
   const { wallet, sendErc20Transaction } = useWallet();
   const { getTokenInfo } = useToken();
   const [recipientAddress, setRecipientAddress] = useState("");
@@ -111,11 +122,17 @@ const SendErc20Screen: React.FC<SendErc20ScreenProps> = ({ onBack }) => {
         chainId: 11155111, // Sepolia
         timestamp: Date.now(),
       });
-      alert(
-        `ERC20 Transaction sent successfully!\n\nTransaction Hash: ${txHash}\n\nBlock Number: ${
-          receipt.blockNumber
-        }\n\nGas Used: ${receipt.gasUsed.toString()}\n\nView on Etherscan: https://sepolia.etherscan.io/tx/${txHash}`
-      );
+      onTransactionSuccess({
+        txHash,
+        receipt,
+        from: wallet.address,
+        to: recipientAddress.trim(),
+        amount,
+        gasPrice,
+        gasLimit: 60000,
+        chainId: 11155111, // Sepolia
+        timestamp: Date.now(),
+      });
       setRecipientAddress("");
       setTokenAddress("");
       setAmount("");

@@ -893,3 +893,121 @@ body {
 .burger-menu-item-danger:hover svg {
   color: #ef4444;
 }
+
+/* Transaction Success Screen Styles */
+.transaction-success-content {
+  text-align: left;
+  background: #1a1f2e;
+  width: 100%;
+  max-width: 100%;
+}
+
+.success-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #334155;
+}
+
+.success-header h2 {
+  font-size: 18px;
+  color: #10b981;
+  font-weight: 600;
+  margin: 0;
+}
+
+.btn-close {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-close:hover {
+  background: #334155;
+  color: #ffffff;
+}
+
+.transaction-details {
+  margin-bottom: 24px;
+}
+
+.detail-section {
+  margin-bottom: 20px;
+  padding: 16px;
+  background: #0f1419;
+  border-radius: 8px;
+  border: 1px solid #334155;
+}
+
+.detail-section h3 {
+  font-size: 14px;
+  color: #94a3b8;
+  margin-bottom: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  font-size: 13px;
+}
+
+.detail-row:last-child {
+  margin-bottom: 0;
+}
+
+.detail-row span:first-child {
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.detail-row span:last-child {
+  color: #ffffff;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+}
+
+.hash-container,
+.address-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 200px;
+}
+
+.hash-text,
+.address-text {
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  color: #ffffff;
+  word-break: break-all;
+  flex: 1;
+  min-width: 0;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.action-buttons .btn {
+  flex: 1;
+  max-width: 200px;
+}

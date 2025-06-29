@@ -8,9 +8,20 @@ import {
 
 interface SendScreenProps {
   onBack: () => void;
+  onTransactionSuccess: (txData: {
+    txHash: string;
+    receipt: any;
+    from: string;
+    to: string;
+    amount: string;
+    gasPrice: string;
+    gasLimit: number;
+    chainId: number;
+    timestamp: number;
+  }) => void;
 }
 
-const SendScreen: React.FC<SendScreenProps> = ({ onBack }) => {
+const SendScreen: React.FC<SendScreenProps> = ({ onBack, onTransactionSuccess }) => {
   const { wallet, sendTransaction } = useWallet();
   const [recipientAddress, setRecipientAddress] = useState("");
   const [amount, setAmount] = useState("");
@@ -90,17 +101,22 @@ const SendScreen: React.FC<SendScreenProps> = ({ onBack }) => {
         timestamp: Date.now(),
       });
 
-      // Show success message
-      alert(
-        `Transaction sent successfully!\n\nTransaction Hash: ${txHash}\n\nBlock Number: ${
-          receipt.blockNumber
-        }\n\nGas Used: ${receipt.gasUsed.toString()}\n\nView on Etherscan: https://sepolia.etherscan.io/tx/${txHash}`
-      );
-
       // Clear form
       setRecipientAddress("");
       setAmount("");
       setGasPrice("20");
+
+      onTransactionSuccess({
+        txHash,
+        receipt,
+        from: wallet.address,
+        to: recipientAddress.trim(),
+        amount,
+        gasPrice,
+        gasLimit: 21000,
+        chainId: 11155111, // Sepolia
+        timestamp: Date.now(),
+      });
     } catch (error) {
       console.error("Error sending transaction:", error);
       setError(

@@ -10,17 +10,26 @@ import { getAddressBook } from "../../utils/addressBookStorage";
 interface MultisigScreenProps {
   onBack: () => void;
   onOpenMultisigInteract: (addr: string) => void;
+  onMultisigDeploymentSuccess: (deploymentData: {
+    contractAddress: string;
+    signers: string[];
+    minSignatures: number;
+    deployerAddress: string;
+    chainId: number;
+    timestamp: number;
+  }) => void;
 }
 
 const MultisigScreen: React.FC<MultisigScreenProps> = ({
   onBack,
   onOpenMultisigInteract,
+  onMultisigDeploymentSuccess,
 }) => {
   const [addresses, setAddresses] = useState<string[]>([""]);
   const [minSignatures, setMinSignatures] = useState<number>(1);
   const [error, setError] = useState<string>("");
   const [addressErrors, setAddressErrors] = useState<string[]>([""]);
-  const { deployMultiSig } = useWallet();
+  const { deployMultiSig, wallet } = useWallet();
   const [isLoading, setIsLoading] = useState(false);
   const [savedMultisigs, setSavedMultisigs] = useState<string[]>([]);
   const [customMultisig, setCustomMultisig] = useState<string>("");
@@ -127,7 +136,14 @@ const MultisigScreen: React.FC<MultisigScreenProps> = ({
       const multiSigAddress = await deployMultiSig(addresses, minSignatures);
       addMultisigContract(multiSigAddress);
       setSavedMultisigs(getMultisigContracts());
-      alert("Multisig contract deployed at: " + multiSigAddress);
+      onMultisigDeploymentSuccess({
+        contractAddress: multiSigAddress,
+        signers: filtered,
+        minSignatures: minSignatures,
+        deployerAddress: wallet?.address || "",
+        chainId: 11155111, // Sepolia
+        timestamp: Date.now(),
+      });
     } catch (e: any) {
       setError(e.message);
     } finally {

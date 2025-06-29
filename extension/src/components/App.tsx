@@ -19,6 +19,9 @@ import SendErc20Screen from "./screens/SendErc20Screen";
 import TokenScreen from "./screens/TokenScreen";
 import { TokenProvider } from "./providers/TokenProvider";
 import AddressBookScreen from "./screens/AddressBookScreen";
+import TransactionSuccessScreen from "./screens/TransactionSuccessScreen";
+import MultisigDeploymentSuccessScreen from "./screens/MultisigDeploymentSuccessScreen";
+import MultisigTransactionSuccessScreen from "./screens/MultisigTransactionSuccessScreen";
 
 const App = () => {
   const {
@@ -38,6 +41,37 @@ const App = () => {
   const [pendingPassword, setPendingPassword] = useState<string>("");
   const [currentContractAddress, setCurrentContractAddress] =
     useState<string>("");
+  const [transactionSuccess, setTransactionSuccess] = useState<{
+    txHash: string;
+    receipt: any;
+    from: string;
+    to: string;
+    amount: string;
+    gasPrice: string;
+    gasLimit: number;
+    chainId: number;
+    timestamp: number;
+  } | null>(null);
+  const [multisigDeploymentSuccess, setMultisigDeploymentSuccess] = useState<{
+    contractAddress: string;
+    signers: string[];
+    minSignatures: number;
+    deployerAddress: string;
+    chainId: number;
+    timestamp: number;
+  } | null>(null);
+  const [multisigTransactionSuccess, setMultisigTransactionSuccess] = useState<{
+    transactionType: "propose" | "deposit" | "sign" | "execute";
+    txHash: string;
+    contractAddress: string;
+    transactionId: string;
+    recipientAddress?: string;
+    amount?: string;
+    tokenAddress?: string;
+    signerAddress: string;
+    chainId: number;
+    timestamp: number;
+  } | null>(null);
 
   // Set initial screen based on wallet state
   useEffect(() => {
@@ -107,6 +141,69 @@ const App = () => {
     setCurrentScreen("unlock");
   };
 
+  const handleTransactionSuccess = (txData: {
+    txHash: string;
+    receipt: any;
+    from: string;
+    to: string;
+    amount: string;
+    gasPrice: string;
+    gasLimit: number;
+    chainId: number;
+    timestamp: number;
+  }) => {
+    setTransactionSuccess(txData);
+    setCurrentScreen("transaction-success");
+  };
+
+  const handleCloseTransactionSuccess = () => {
+    setTransactionSuccess(null);
+    setCurrentScreen("wallet");
+  };
+
+  const handleMultisigDeploymentSuccess = (deploymentData: {
+    contractAddress: string;
+    signers: string[];
+    minSignatures: number;
+    deployerAddress: string;
+    chainId: number;
+    timestamp: number;
+  }) => {
+    setMultisigDeploymentSuccess(deploymentData);
+    setCurrentScreen("multisig-deployment-success");
+  };
+
+  const handleCloseMultisigDeploymentSuccess = () => {
+    setMultisigDeploymentSuccess(null);
+    setCurrentScreen("multisig");
+  };
+
+  const handleMultisigTransactionSuccess = (transactionData: {
+    transactionType: "propose" | "deposit" | "sign" | "execute";
+    txHash: string;
+    contractAddress: string;
+    transactionId: string;
+    recipientAddress?: string;
+    amount?: string;
+    tokenAddress?: string;
+    signerAddress: string;
+    chainId: number;
+    timestamp: number;
+  }) => {
+    setMultisigTransactionSuccess(transactionData);
+    setCurrentScreen("multisig-transaction-success");
+  };
+
+  const handleCloseMultisigTransactionSuccess = () => {
+    setMultisigTransactionSuccess(null);
+    setCurrentScreen("multisig-interact");
+  };
+
+  const handleOpenMultisigInteract = (addr: string) => {
+    setCurrentContractAddress(addr);
+    setCurrentScreen("multisig-interact");
+  };
+
   if (isLoading) {
     return <LoadingScreen />;
   }
@@ -127,11 +224,43 @@ const App = () => {
         );
         break;
       case "send":
-        component = <SendScreen onBack={() => setCurrentScreen("wallet")} />;
+        component = (
+          <SendScreen 
+            onBack={() => setCurrentScreen("wallet")}
+            onTransactionSuccess={handleTransactionSuccess}
+          />
+        );
         break;
       case "send-erc20":
         component = (
-          <SendErc20Screen onBack={() => setCurrentScreen("wallet")} />
+          <SendErc20Screen 
+            onBack={() => setCurrentScreen("wallet")}
+            onTransactionSuccess={handleTransactionSuccess}
+          />
+        );
+        break;
+      case "transaction-success":
+        component = transactionSuccess ? (
+          <TransactionSuccessScreen
+            txHash={transactionSuccess.txHash}
+            receipt={transactionSuccess.receipt}
+            from={transactionSuccess.from}
+            to={transactionSuccess.to}
+            amount={transactionSuccess.amount}
+            gasPrice={transactionSuccess.gasPrice}
+            gasLimit={transactionSuccess.gasLimit}
+            chainId={transactionSuccess.chainId}
+            timestamp={transactionSuccess.timestamp}
+            onClose={handleCloseTransactionSuccess}
+          />
+        ) : (
+          <WalletScreen
+            onSendEth={() => setCurrentScreen("send")}
+            onSendErc20={() => setCurrentScreen("send-erc20")}
+            onUploadMultisig={() => setCurrentScreen("multisig")}
+            onViewTokens={() => setCurrentScreen("tokens")}
+            onViewAddressBook={() => setCurrentScreen("address-book")}
+          />
         );
         break;
       case "view-private-key":
@@ -148,10 +277,8 @@ const App = () => {
         component = (
           <MultisigScreen
             onBack={() => setCurrentScreen("wallet")}
-            onOpenMultisigInteract={(addr: string) => {
-              setCurrentContractAddress(addr);
-              setCurrentScreen("multisig-interact");
-            }}
+            onOpenMultisigInteract={handleOpenMultisigInteract}
+            onMultisigDeploymentSuccess={handleMultisigDeploymentSuccess}
           />
         );
         break;
@@ -161,6 +288,7 @@ const App = () => {
             <MultisigInteractScreen
               onBack={() => setCurrentScreen("wallet")}
               contractAddress={currentContractAddress}
+              onMultisigTransactionSuccess={handleMultisigTransactionSuccess}
             />
           </MultisigContractProvider>
         );
@@ -171,6 +299,51 @@ const App = () => {
       case "address-book":
         component = (
           <AddressBookScreen onBack={() => setCurrentScreen("wallet")} />
+        );
+        break;
+      case "multisig-deployment-success":
+        component = multisigDeploymentSuccess ? (
+          <MultisigDeploymentSuccessScreen
+            contractAddress={multisigDeploymentSuccess.contractAddress}
+            signers={multisigDeploymentSuccess.signers}
+            minSignatures={multisigDeploymentSuccess.minSignatures}
+            deployerAddress={multisigDeploymentSuccess.deployerAddress}
+            chainId={multisigDeploymentSuccess.chainId}
+            timestamp={multisigDeploymentSuccess.timestamp}
+            onClose={handleCloseMultisigDeploymentSuccess}
+            onOpenMultisigInteract={handleOpenMultisigInteract}
+          />
+        ) : (
+          <WalletScreen
+            onSendEth={() => setCurrentScreen("send")}
+            onSendErc20={() => setCurrentScreen("send-erc20")}
+            onUploadMultisig={() => setCurrentScreen("multisig")}
+            onViewTokens={() => setCurrentScreen("tokens")}
+            onViewAddressBook={() => setCurrentScreen("address-book")}
+          />
+        );
+        break;
+      case "multisig-transaction-success":
+        component = multisigTransactionSuccess ? (
+          <MultisigTransactionSuccessScreen
+            transactionType={multisigTransactionSuccess.transactionType}
+            txHash={multisigTransactionSuccess.txHash}
+            contractAddress={multisigTransactionSuccess.contractAddress}
+            transactionId={multisigTransactionSuccess.transactionId}
+            recipientAddress={multisigTransactionSuccess.recipientAddress}
+            amount={multisigTransactionSuccess.amount}
+            tokenAddress={multisigTransactionSuccess.tokenAddress}
+            signerAddress={multisigTransactionSuccess.signerAddress}
+            chainId={multisigTransactionSuccess.chainId}
+            timestamp={multisigTransactionSuccess.timestamp}
+            onClose={handleCloseMultisigTransactionSuccess}
+          />
+        ) : (
+          <MultisigInteractScreen
+            onBack={() => setCurrentScreen("wallet")}
+            contractAddress={currentContractAddress}
+            onMultisigTransactionSuccess={handleMultisigTransactionSuccess}
+          />
         );
         break;
       default:

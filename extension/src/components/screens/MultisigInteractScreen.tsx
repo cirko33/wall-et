@@ -8,10 +8,23 @@ import { getMultisigTxs, addMultisigTx } from "../../utils/multisigStorage";
 import LoadingScreen from "./LoadingScreen";
 import { getTokenAddressBook } from "../../utils/tokenAddressBookStorage";
 import { getAddressBook } from "../../utils/addressBookStorage";
+import { useWallet } from "../providers/WalletProvider";
 
 interface MultisigInteractScreenProps {
   onBack: () => void;
   contractAddress: string;
+  onMultisigTransactionSuccess: (transactionData: {
+    transactionType: "propose" | "deposit" | "sign" | "execute";
+    txHash: string;
+    contractAddress: string;
+    transactionId: string;
+    recipientAddress?: string;
+    amount?: string;
+    tokenAddress?: string;
+    signerAddress: string;
+    chainId: number;
+    timestamp: number;
+  }) => void;
 }
 
 interface TransactionDataLocal {
@@ -30,6 +43,7 @@ interface TransactionDataLocal {
 const MultisigInteractScreen: React.FC<MultisigInteractScreenProps> = ({
   onBack,
   contractAddress,
+  onMultisigTransactionSuccess,
 }) => {
   const {
     proposeNative,
@@ -41,6 +55,7 @@ const MultisigInteractScreen: React.FC<MultisigInteractScreenProps> = ({
     getTransactionData,
     error: contractError,
   } = useMultisigContract();
+  const { wallet } = useWallet();
   const [activeTab, setActiveTab] = useState<
     "propose" | "deposit" | "sign" | "execute" | "transactions"
   >("propose");
@@ -197,7 +212,18 @@ const MultisigInteractScreen: React.FC<MultisigInteractScreenProps> = ({
       if (!txHash) throw new Error("Failed to propose transaction");
       addMultisigTx(contractAddress, txHash);
       setTxHashes(getMultisigTxs(contractAddress));
-      alert(`Proposed transaction with hash: ${txHash}`);
+      onMultisigTransactionSuccess({
+        transactionType: "propose",
+        txHash,
+        contractAddress,
+        transactionId: txHash,
+        recipientAddress: to,
+        amount: value,
+        tokenAddress: proposeType === "token" ? tokenAddress : undefined,
+        signerAddress: wallet?.address || "",
+        chainId: 11155111, // Sepolia
+        timestamp: Date.now(),
+      });
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -224,7 +250,18 @@ const MultisigInteractScreen: React.FC<MultisigInteractScreenProps> = ({
       }
       if (depositType === "native") {
         await depositNative(depositTxId, ethers.parseEther(depositValue));
-        alert("Native deposit successful");
+        onMultisigTransactionSuccess({
+          transactionType: "deposit",
+          txHash: depositTxId,
+          contractAddress,
+          transactionId: depositTxId,
+          recipientAddress: undefined,
+          amount: depositValue,
+          tokenAddress: undefined,
+          signerAddress: wallet?.address || "",
+          chainId: 11155111, // Sepolia
+          timestamp: Date.now(),
+        });
       } else {
         if (!depositTokenAddress) return setError("Token address required");
         await depositToken(
@@ -232,7 +269,18 @@ const MultisigInteractScreen: React.FC<MultisigInteractScreenProps> = ({
           depositTokenAddress,
           ethers.parseEther(depositValue)
         );
-        alert("Token deposit successful");
+        onMultisigTransactionSuccess({
+          transactionType: "deposit",
+          txHash: depositTxId,
+          contractAddress,
+          transactionId: depositTxId,
+          recipientAddress: undefined,
+          amount: depositValue,
+          tokenAddress: depositTokenAddress,
+          signerAddress: wallet?.address || "",
+          chainId: 11155111, // Sepolia
+          timestamp: Date.now(),
+        });
       }
       setTxHashes(getMultisigTxs(contractAddress));
     } catch (err: any) {
@@ -259,7 +307,18 @@ const MultisigInteractScreen: React.FC<MultisigInteractScreenProps> = ({
         }
       }
       await sign(txId);
-      alert("Transaction signed");
+      onMultisigTransactionSuccess({
+        transactionType: "sign",
+        txHash: txId,
+        contractAddress,
+        transactionId: txId,
+        recipientAddress: undefined,
+        amount: undefined,
+        tokenAddress: undefined,
+        signerAddress: wallet?.address || "",
+        chainId: 11155111, // Sepolia
+        timestamp: Date.now(),
+      });
       setTxHashes(getMultisigTxs(contractAddress));
       fetchTransactions();
     } catch (err: any) {
@@ -286,7 +345,18 @@ const MultisigInteractScreen: React.FC<MultisigInteractScreenProps> = ({
         }
       }
       await execute(txId);
-      alert("Transaction executed");
+      onMultisigTransactionSuccess({
+        transactionType: "execute",
+        txHash: txId,
+        contractAddress,
+        transactionId: txId,
+        recipientAddress: undefined,
+        amount: undefined,
+        tokenAddress: undefined,
+        signerAddress: wallet?.address || "",
+        chainId: 11155111, // Sepolia
+        timestamp: Date.now(),
+      });
       setTxHashes(getMultisigTxs(contractAddress));
       fetchTransactions();
     } catch (err: any) {
@@ -606,20 +676,6 @@ const MultisigInteractScreen: React.FC<MultisigInteractScreenProps> = ({
             </div>
           )}
         </div>
-      </div>
-      <div className="margin-top-32 padding-16 background-0f1419 border-radius-8 border-1px-solid-334155">
-        <h4 className="color-white margin-bottom-8">All Transaction Hashes</h4>
-        {txHashes.length === 0 ? (
-          <div className="color-94a3b8">No transaction hashes found.</div>
-        ) : (
-          <ul className="font-monospace font-size-13 color-94a3b8 margin-0 padding-0 list-style-none">
-            {txHashes.map((hash) => (
-              <li key={hash} className="word-break-all margin-bottom-4">
-                {hash}
-              </li>
-            ))}
-          </ul>
-        )}
       </div>
     </div>
   );
