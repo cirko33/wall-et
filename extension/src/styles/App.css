@@ -728,11 +728,11 @@ body {
   justify-content: space-between;
   height: 60px;
   padding: 0 16px;
-  background: #fff;
+  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
   border-bottom: 1px solid #eee;
 }
 .navbar-dark {
-  background: #2a2f40;
+  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
   border-bottom: 1px solid #181a20;
 }
 .navbar-logo {

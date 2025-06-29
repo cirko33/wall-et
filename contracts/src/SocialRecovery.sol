@@ -125,6 +125,12 @@ contract SocialRecovery is Ownable {
      * @param _quorum The new quorum value.
      */
     function setQuorum(uint256 _quorum) external onlyOwner notRecovered {
+        require(_quorum > 0, "Quorum must be greater than 0");
+        require(
+            _quorum <= recoveryAddressCount,
+            "Quorum cannot be greater than the number of recovery addresses"
+        );
+
         quorum = _quorum;
     }
 

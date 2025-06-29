@@ -32,6 +32,11 @@ contract Approver {
     }
 
     /**
+     * @dev Receive ETH
+     */
+    receive() external payable {}
+
+    /**
      * @dev Deposit ERC-20 tokens to MultiSig contract
      * @param multiSigAddress The address of the MultiSig contract
      * @param txHash The transaction hash for the deposit

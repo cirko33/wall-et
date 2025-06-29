@@ -13,6 +13,7 @@ export type Screen =
   | "tokens"
   | "address-book"
   | "sign-out"
+  | "recovery-contract"
   | "transaction-success"
   | "multisig-deployment-success"
   | "multisig-transaction-success";

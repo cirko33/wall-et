@@ -42,11 +42,6 @@ const ImportScreen: React.FC<ImportScreenProps> = ({ onBack, onImport }) => {
 
   return (
     <div className="container">
-      <div className="header">
-        <h1>WALL-ET</h1>
-        <div className="network-badge">Sepolia Testnet</div>
-      </div>
-
       <div className="screen">
         <div className="import-content">
           <h2>Import Wallet</h2>
@@ -97,11 +92,15 @@ const ImportScreen: React.FC<ImportScreenProps> = ({ onBack, onImport }) => {
             {error && <div className="warning">{error}</div>}
 
             <div className="button-group">
-              <button type="button" className="btn btn-secondary" onClick={onBack}>
-                Back
-              </button>
               <button type="submit" className="btn btn-primary">
                 Import Wallet
+              </button>
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={onBack}
+              >
+                Back
               </button>
             </div>
           </form>

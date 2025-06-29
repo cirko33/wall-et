@@ -33,11 +33,6 @@ const GeneratedWalletScreen: React.FC<GeneratedWalletScreenProps> = ({
 
   return (
     <div className="container">
-      <div className="header">
-        <h1>WALL-ET</h1>
-        <div className="network-badge">Sepolia Testnet</div>
-      </div>
-
       <div className="screen">
         <div className="generated-content">
           <h2>Wallet Generated Successfully!</h2>

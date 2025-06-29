@@ -22,6 +22,8 @@ import AddressBookScreen from "./screens/AddressBookScreen";
 import TransactionSuccessScreen from "./screens/TransactionSuccessScreen";
 import MultisigDeploymentSuccessScreen from "./screens/MultisigDeploymentSuccessScreen";
 import MultisigTransactionSuccessScreen from "./screens/MultisigTransactionSuccessScreen";
+import RecoveryContractScreen from "./screens/RecoveryContractScreen";
+import { RecoveryContractProvider } from "./providers/RecoveryContractProvider";
 
 const App = () => {
   const {
@@ -225,7 +227,7 @@ const App = () => {
         break;
       case "send":
         component = (
-          <SendScreen 
+          <SendScreen
             onBack={() => setCurrentScreen("wallet")}
             onTransactionSuccess={handleTransactionSuccess}
           />
@@ -233,7 +235,7 @@ const App = () => {
         break;
       case "send-erc20":
         component = (
-          <SendErc20Screen 
+          <SendErc20Screen
             onBack={() => setCurrentScreen("wallet")}
             onTransactionSuccess={handleTransactionSuccess}
           />
@@ -269,9 +271,7 @@ const App = () => {
         );
         break;
       case "sign-out":
-        component = (
-          <SignOutScreen onBack={() => setCurrentScreen("wallet")} />
-        );
+        component = <SignOutScreen onBack={() => setCurrentScreen("wallet")} />;
         break;
       case "multisig":
         component = (
@@ -346,6 +346,15 @@ const App = () => {
           />
         );
         break;
+      case "recovery-contract":
+        component = (
+          <RecoveryContractProvider contractAddress={currentContractAddress}>
+            <RecoveryContractScreen
+              setProviderContractAddress={setCurrentContractAddress}
+            />
+          </RecoveryContractProvider>
+        );
+        break;
       default:
         component = (
           <WalletScreen
@@ -365,6 +374,7 @@ const App = () => {
           onLock={handleLock}
           onViewPrivateKey={() => setCurrentScreen("view-private-key")}
           onSignOut={() => setCurrentScreen("sign-out")}
+          onRecoveryContract={() => setCurrentScreen("recovery-contract")}
           dark
           showMenu
           setCurrentScreen={setCurrentScreen}
@@ -386,23 +396,26 @@ const App = () => {
 
   // If no password is set, show setup screen
   if (!isPasswordSet) {
+    let component: JSX.Element;
     switch (currentScreen) {
       case "setup":
-        return (
+        component = (
           <SetupScreen
             onGenerateWallet={() => setCurrentScreen("password-setup")}
             onImportWallet={() => setCurrentScreen("import")}
           />
         );
+        break;
       case "password-setup":
-        return (
+        component = (
           <PasswordSetupScreen
             onPasswordSet={handlePasswordSet}
             onBack={() => setCurrentScreen("setup")}
           />
         );
+        break;
       case "import":
-        return (
+        component = (
           <ImportScreen
             onBack={() => setCurrentScreen("setup")}
             onImport={(privateKey, password) =>
@@ -410,21 +423,31 @@ const App = () => {
             }
           />
         );
+        break;
       case "generated":
-        return (
+        component = (
           <GeneratedWalletScreen
             walletData={generatedWalletData}
             onContinue={() => setCurrentScreen("wallet")}
           />
         );
+        break;
       default:
-        return (
+        component = (
           <SetupScreen
             onGenerateWallet={() => setCurrentScreen("password-setup")}
             onImportWallet={() => setCurrentScreen("import")}
           />
         );
+        break;
     }
+
+    return (
+      <>
+        <Navbar dark showMenu={false} setCurrentScreen={setCurrentScreen} />
+        {component}
+      </>
+    );
   }
 
   // Default fallback

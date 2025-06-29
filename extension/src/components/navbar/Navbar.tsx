@@ -7,10 +7,19 @@ const Navbar: React.FC<{
   onLock?: () => void;
   onViewPrivateKey?: () => void;
   onSignOut?: () => void;
+  onRecoveryContract?: () => void;
   showMenu?: boolean;
   dark?: boolean;
   setCurrentScreen?: (screen: Screen) => void;
-}> = ({ onLock, onViewPrivateKey, onSignOut, showMenu = true, dark = false, setCurrentScreen }) => {
+}> = ({
+  onLock,
+  onViewPrivateKey,
+  onSignOut,
+  onRecoveryContract,
+  showMenu = true,
+  dark = false,
+  setCurrentScreen,
+}) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const toggleMenu = () => {
@@ -41,27 +50,37 @@ const Navbar: React.FC<{
           </button>
         )}
       </div>
-      
+
       {/* Burger Menu Overlay */}
       {isMenuOpen && (
-        <div className="burger-menu-overlay" onClick={() => setIsMenuOpen(false)}>
+        <div
+          className="burger-menu-overlay"
+          onClick={() => setIsMenuOpen(false)}
+        >
           <div className="burger-menu" onClick={(e) => e.stopPropagation()}>
             <div className="burger-menu-items">
-              <button 
+              <button
                 className="burger-menu-item"
                 onClick={() => handleMenuAction(onLock)}
               >
                 <MdLock size={20} />
                 <span>Lock Wallet</span>
               </button>
-              <button 
+              <button
                 className="burger-menu-item"
                 onClick={() => handleMenuAction(onViewPrivateKey)}
               >
                 <MdVisibility size={20} />
                 <span>View Private Key</span>
               </button>
-              <button 
+              <button
+                className="burger-menu-item"
+                onClick={() => handleMenuAction(onRecoveryContract)}
+              >
+                <MdLogout size={20} />
+                <span>Recovery Contract</span>
+              </button>
+              <button
                 className="burger-menu-item burger-menu-item-danger"
                 onClick={() => handleMenuAction(onSignOut)}
               >

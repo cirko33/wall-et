@@ -11,11 +11,6 @@ const SetupScreen: React.FC<SetupScreenProps> = ({
 }) => {
   return (
     <div className="container">
-      <div className="header">
-        <h1>WALL-ET</h1>
-        <div className="network-badge">Sepolia Testnet</div>
-      </div>
-
       <div className="screen">
         <div className="setup-content">
           <h2>Welcome to WALL-ET</h2>
