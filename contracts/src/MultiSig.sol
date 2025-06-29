@@ -10,7 +10,6 @@ import {IMultiSig} from "./IMultiSig.sol";
  * @dev Store & retrieve value in a variable
  * @custom:dev-run-script ./scripts/deploy_with_ethers.ts
  */
-
 contract MultiSig is IMultiSig {
     // Validator addresses
     mapping(address => bool) public signers;
@@ -190,5 +189,9 @@ contract MultiSig is IMultiSig {
 
             require(success, "Execution failed");
         }
+    }
+
+    function getTransaction(bytes32 txHash) external view returns (Transaction memory) {
+        return transactions[txHash];
     }
 }

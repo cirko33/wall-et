@@ -52,5 +52,10 @@
   "bugs": {
     "url": "https://github.com/cirko33/wall-et/issues"
   },
+<<<<<<< HEAD
   "homepage": "https://github.com/cirko33/wall-et#readme"
 }
+=======
+  "homepage": "https://github.com/yourusername/sepolia-eth-wallet-extension#readme"
+}
+>>>>>>> e69ba8d (EIP7702 test)
