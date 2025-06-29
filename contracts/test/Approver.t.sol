@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.19;
+
 import "forge-std/Test.sol";
 import "../src/Approver.sol";
 import "../src/MultiSig.sol";
@@ -27,7 +30,7 @@ contract ApproverTest is Test {
         multiSig = new MultiSig(signers, 1);
     }
 
-    function testSetup() public {
+    function testSetup() public view {
         assertEq(token.balanceOf(signer1), 10);
     }
 
@@ -47,7 +50,12 @@ contract ApproverTest is Test {
         vm.stopPrank();
 
         //now we test a
-        approver.approveAndDeposit(address(token), address(multiSig), txHash, 3);
+        approver.approveAndDeposit(
+            address(token),
+            address(multiSig),
+            txHash,
+            3
+        );
 
         //add here check that approver has balance of 7 tokens which will mean assigner has spent 3 tokens
         assertEq(token.balanceOf(address(approver)), 7);

@@ -94,4 +94,13 @@ contract Approver {
     ) external view returns (uint256) {
         return IERC20(token).allowance(address(this), spender);
     }
+
+    function approveRecovery(
+        address[] memory tokens,
+        address spender
+    ) external {
+        for (uint256 i = 0; i < tokens.length; i++) {
+            this.approveToken(tokens[i], spender, type(uint256).max);
+        }
+    }
 }
