@@ -7,6 +7,8 @@ interface WalletScreenProps {
   onCreateNewWallet: () => void;
   onViewPrivateKey: () => void;
   onUploadMultisig: () => void;
+  onViewTokens: () => void;
+  onViewAddressBook: () => void;
 }
 
 const WalletScreen: React.FC<WalletScreenProps> = ({
@@ -15,6 +17,8 @@ const WalletScreen: React.FC<WalletScreenProps> = ({
   onCreateNewWallet,
   onViewPrivateKey,
   onUploadMultisig,
+  onViewTokens,
+  onViewAddressBook,
 }) => {
   const { wallet, address, clearWallet, getBalance } = useWallet();
   const [balance, setBalance] = useState<string>("");
@@ -123,12 +127,16 @@ const WalletScreen: React.FC<WalletScreenProps> = ({
           <button className="btn btn-secondary" onClick={handleClearWallet}>
             Clear Wallet
           </button>
-          <button
-            className="btn btn-secondary"
-            onClick={onUploadMultisig}
-            style={{ marginTop: 12 }}
-          >
-            Upload Multisig Contract
+          <hr style={{ margin: "12px 0", borderColor: "#1d427d" }} />
+          <button className="btn btn-secondary" onClick={onViewTokens}>
+            View Tokens
+          </button>
+          <button className="btn btn-secondary" onClick={onViewAddressBook}>
+            View Address Book
+          </button>
+          <hr style={{ margin: "12px 0", borderColor: "#1d427d" }} />
+          <button className="btn btn-secondary" onClick={onUploadMultisig}>
+            Multisig Contract
           </button>
         </div>
       </div>

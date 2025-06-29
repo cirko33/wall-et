@@ -15,6 +15,9 @@ import { Screen } from "../types";
 import MultisigInteractScreen from "./screens/MultisigInteractScreen";
 import { MultisigContractProvider } from "./providers/MultisigContractProvider";
 import SendErc20Screen from "./screens/SendErc20Screen";
+import TokenScreen from "./screens/TokenScreen";
+import { TokenProvider } from "./providers/TokenProvider";
+import AddressBookScreen from "./screens/AddressBookScreen";
 
 const App = () => {
   const {
@@ -119,6 +122,8 @@ const App = () => {
             onCreateNewWallet={() => setCurrentScreen("password-setup")}
             onViewPrivateKey={() => setCurrentScreen("view-private-key")}
             onUploadMultisig={() => setCurrentScreen("multisig")}
+            onViewTokens={() => setCurrentScreen("tokens")}
+            onViewAddressBook={() => setCurrentScreen("address-book")}
           />
         );
         break;
@@ -156,6 +161,14 @@ const App = () => {
           </MultisigContractProvider>
         );
         break;
+      case "tokens":
+        component = <TokenScreen onBack={() => setCurrentScreen("wallet")} />;
+        break;
+      case "address-book":
+        component = (
+          <AddressBookScreen onBack={() => setCurrentScreen("wallet")} />
+        );
+        break;
       default:
         component = (
           <WalletScreen
@@ -164,6 +177,8 @@ const App = () => {
             onCreateNewWallet={() => setCurrentScreen("password-setup")}
             onViewPrivateKey={() => setCurrentScreen("view-private-key")}
             onUploadMultisig={() => setCurrentScreen("multisig")}
+            onViewTokens={() => setCurrentScreen("tokens")}
+            onViewAddressBook={() => setCurrentScreen("address-book")}
           />
         );
         break;

@@ -1,5 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { useWallet } from "../providers/WalletProvider";
+import {
+  addToAddressBook,
+  getAddressBook,
+} from "../../utils/addressBookStorage";
+import {
+  addToTokenAddressBook,
+  getTokenAddressBook,
+} from "../../utils/tokenAddressBookStorage";
+import { useToken } from "../providers/TokenProvider";
 
 interface SendErc20ScreenProps {
   onBack: () => void;
@@ -7,6 +16,7 @@ interface SendErc20ScreenProps {
 
 const SendErc20Screen: React.FC<SendErc20ScreenProps> = ({ onBack }) => {
   const { wallet, sendErc20Transaction } = useWallet();
+  const { getTokenInfo } = useToken();
   const [recipientAddress, setRecipientAddress] = useState("");
   const [tokenAddress, setTokenAddress] = useState("");
   const [amount, setAmount] = useState("");
@@ -15,6 +25,12 @@ const SendErc20Screen: React.FC<SendErc20ScreenProps> = ({ onBack }) => {
   const [error, setError] = useState("");
   const [estimatedFee, setEstimatedFee] = useState("0");
   const [totalAmount, setTotalAmount] = useState("0");
+  const [tokenAddressBook, setTokenAddressBook] = useState<{
+    [address: string]: { name: string; symbol: string; decimals: number };
+  }>({});
+  const [addressBook, setAddressBook] = useState<{ [address: string]: string }>(
+    {}
+  );
 
   // Calculate estimated fee and total amount
   const calculateFees = () => {
@@ -29,6 +45,11 @@ const SendErc20Screen: React.FC<SendErc20ScreenProps> = ({ onBack }) => {
   useEffect(() => {
     calculateFees();
   }, [amount, gasPrice]);
+
+  useEffect(() => {
+    setTokenAddressBook(getTokenAddressBook());
+    setAddressBook(getAddressBook());
+  }, []);
 
   const handleSend = async () => {
     if (!wallet) {
@@ -54,10 +75,31 @@ const SendErc20Screen: React.FC<SendErc20ScreenProps> = ({ onBack }) => {
     setIsLoading(true);
     setError("");
     try {
+      const addressBook = getAddressBook();
+      if (!addressBook[recipientAddress.trim()]) {
+        addToAddressBook(recipientAddress.trim(), "no name");
+      }
+
+      const tokenAddressBook = getTokenAddressBook();
+      let tokenInfo = tokenAddressBook[tokenAddress.trim()];
+      if (!tokenInfo) {
+        let tokenInfo = await getTokenInfo(tokenAddress.trim());
+
+        if (tokenInfo) {
+          addToTokenAddressBook(
+            tokenAddress.trim(),
+            tokenInfo.name,
+            tokenInfo.symbol,
+            tokenInfo.decimals
+          );
+        }
+      }
+
       const { txHash, receipt } = await sendErc20Transaction(
         tokenAddress.trim(),
         recipientAddress.trim(),
         amount,
+        tokenInfo.decimals,
         gasPrice
       );
 
@@ -105,7 +147,15 @@ const SendErc20Screen: React.FC<SendErc20ScreenProps> = ({ onBack }) => {
             value={tokenAddress}
             onChange={(e) => setTokenAddress(e.target.value)}
             placeholder="0x..."
+            list="token-address-list"
           />
+          <datalist id="token-address-list">
+            {Object.entries(tokenAddressBook).map(([address, info]) => (
+              <option key={address} value={address}>
+                {info.name} ({info.symbol})
+              </option>
+            ))}
+          </datalist>
         </div>
         <div className="form-group">
           <label htmlFor="recipient-address">Recipient Address:</label>
@@ -116,7 +166,15 @@ const SendErc20Screen: React.FC<SendErc20ScreenProps> = ({ onBack }) => {
             value={recipientAddress}
             onChange={(e) => setRecipientAddress(e.target.value)}
             placeholder="0x..."
+            list="recipient-address-list"
           />
+          <datalist id="recipient-address-list">
+            {Object.entries(addressBook).map(([address, name]) => (
+              <option key={address} value={address}>
+                {name}
+              </option>
+            ))}
+          </datalist>
         </div>
         <div className="form-group">
           <label htmlFor="amount">Amount (Token Units):</label>
@@ -157,13 +215,6 @@ const SendErc20Screen: React.FC<SendErc20ScreenProps> = ({ onBack }) => {
         {error && <div className="warning">{error}</div>}
         <div className="button-group">
           <button
-            className="btn btn-secondary"
-            onClick={onBack}
-            disabled={isLoading}
-          >
-            Back to Wallet
-          </button>
-          <button
             className="btn btn-primary"
             onClick={handleSend}
             disabled={
@@ -175,6 +226,13 @@ const SendErc20Screen: React.FC<SendErc20ScreenProps> = ({ onBack }) => {
             }
           >
             {isLoading ? "Sending Transaction..." : "Send Token"}
+          </button>
+          <button
+            className="btn btn-secondary"
+            onClick={onBack}
+            disabled={isLoading}
+          >
+            Back to Wallet
           </button>
         </div>
         <div className="warning">

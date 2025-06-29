@@ -1,5 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useWallet } from "../providers/WalletProvider";
+import {
+  AddressBook,
+  addToAddressBook,
+  getAddressBook,
+} from "../../utils/addressBookStorage";
 
 interface SendScreenProps {
   onBack: () => void;
@@ -14,6 +19,9 @@ const SendScreen: React.FC<SendScreenProps> = ({ onBack }) => {
   const [error, setError] = useState("");
   const [estimatedFee, setEstimatedFee] = useState("0");
   const [totalAmount, setTotalAmount] = useState("0");
+  const [addressBook, setAddressBook] = useState<{ [address: string]: string }>(
+    {}
+  );
 
   // Calculate estimated fee and total amount
   const calculateFees = () => {
@@ -33,6 +41,10 @@ const SendScreen: React.FC<SendScreenProps> = ({ onBack }) => {
   useEffect(() => {
     calculateFees();
   }, [amount, gasPrice]);
+
+  useEffect(() => {
+    setAddressBook(getAddressBook());
+  }, []);
 
   const handleSend = async () => {
     if (!wallet) {
@@ -59,6 +71,10 @@ const SendScreen: React.FC<SendScreenProps> = ({ onBack }) => {
     setError("");
 
     try {
+      const addressBook = getAddressBook();
+      if (!addressBook[recipientAddress.trim()]) {
+        addToAddressBook(recipientAddress.trim(), "no name");
+      }
       // Send the transaction to the network
       const { txHash, receipt } = await sendTransaction(
         recipientAddress.trim(),
@@ -114,7 +130,15 @@ const SendScreen: React.FC<SendScreenProps> = ({ onBack }) => {
             value={recipientAddress}
             onChange={(e) => setRecipientAddress(e.target.value)}
             placeholder="0x..."
+            list="recipient-address-list"
           />
+          <datalist id="recipient-address-list">
+            {Object.entries(addressBook).map(([address, name]) => (
+              <option key={address} value={address}>
+                {name}
+              </option>
+            ))}
+          </datalist>
         </div>
 
         <div className="form-group">
@@ -160,13 +184,6 @@ const SendScreen: React.FC<SendScreenProps> = ({ onBack }) => {
 
         <div className="button-group">
           <button
-            className="btn btn-secondary"
-            onClick={onBack}
-            disabled={isLoading}
-          >
-            Back to Wallet
-          </button>
-          <button
             className="btn btn-primary"
             onClick={handleSend}
             disabled={
@@ -177,6 +194,13 @@ const SendScreen: React.FC<SendScreenProps> = ({ onBack }) => {
             }
           >
             {isLoading ? "Sending Transaction..." : "Send Transaction"}
+          </button>
+          <button
+            className="btn btn-secondary"
+            onClick={onBack}
+            disabled={isLoading}
+          >
+            Back to Wallet
           </button>
         </div>
 

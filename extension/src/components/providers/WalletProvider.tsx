@@ -44,6 +44,7 @@ interface WalletContextType {
     tokenAddress: string,
     to: string,
     amount: string,
+    decimals?: number,
     gasPrice?: string
   ) => Promise<{
     txHash: string;
@@ -490,6 +491,7 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
     tokenAddress: string,
     to: string,
     amount: string,
+    decimals?: number,
     gasPrice?: string
   ) => {
     if (!wallet) {
@@ -503,7 +505,7 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
       }
 
       // Parse amount to Wei
-      const amountWei = ethers.parseEther(amount);
+      const amountWei = ethers.parseUnits(amount, decimals);
 
       // Get current gas price if not provided
       let gasPriceWei: ethers.BigNumberish;

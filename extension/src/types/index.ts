@@ -9,4 +9,6 @@ export type Screen =
   | "unlock"
   | "view-private-key"
   | "multisig"
-  | "multisig-interact";
+  | "multisig-interact"
+  | "tokens"
+  | "address-book";

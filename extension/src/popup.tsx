@@ -3,6 +3,7 @@ import ReactDOM from "react-dom/client";
 import { WalletProvider } from "./components/providers/WalletProvider";
 import App from "./components/App";
 import "./styles/App.css";
+import { TokenProvider } from "./components/providers/TokenProvider";
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement
@@ -11,7 +12,9 @@ const root = ReactDOM.createRoot(
 root.render(
   <React.StrictMode>
     <WalletProvider>
-      <App />
+      <TokenProvider>
+        <App />
+      </TokenProvider>
     </WalletProvider>
   </React.StrictMode>
 );
