@@ -5,6 +5,7 @@ export type Screen =
   | "generated"
   | "wallet"
   | "send"
+  | "send-erc20"
   | "unlock"
   | "view-private-key"
   | "multisig"

@@ -8,6 +8,11 @@ build-extension:
 	cd extension && npm run build 
 	cd ..
 
+PHONY: dev
+dev:
+	cd extension && npm run dev
+	cd ..
+
 PHONY: build
 build: 
 	make build-contracts
@@ -36,7 +41,7 @@ PHONY: mint
 mint:
 	cd contracts && cast send --rpc-url https://sepolia.infura.io/v3/7a796da878ac4152a6b3bfcb4fc794cb \
 		--private-key $(PRIVATE_KEY) \
-		$(CONTRACT_ADDRESS) "function mint(address,uint256)(bool)" $(TO) $(AMOUNT) 
+		$(CONTRACT_ADDRESS) "function mint(address,uint256)(bool)" $(ADDRESS) $(AMOUNT) 
 
 PHONY: erc20-balance
 erc20-balance:

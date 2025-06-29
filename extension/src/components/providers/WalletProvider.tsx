@@ -8,6 +8,7 @@ import React, {
 import { ethers } from "ethers";
 import crypto from "crypto-js";
 import MultiSigJson from "../../../contracts/MultiSig.json";
+import Erc20Json from "../../../contracts/ERC20.json";
 
 interface WalletContextType {
   wallet: ethers.Wallet | null;
@@ -39,6 +40,15 @@ interface WalletContextType {
   }>;
   getBalance: () => Promise<string>;
   deployMultiSig: (signers: string[], minSignatures: number) => Promise<string>;
+  sendErc20Transaction: (
+    tokenAddress: string,
+    to: string,
+    amount: string,
+    gasPrice?: string
+  ) => Promise<{
+    txHash: string;
+    receipt: any;
+  }>;
 }
 
 const WalletContext = createContext<WalletContextType | undefined>(undefined);
@@ -62,7 +72,7 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
   const [isPasswordSet, setIsPasswordSet] = useState<boolean>(false);
 
   // Initialize Infura provider
-  const provider = new ethers.providers.JsonRpcProvider(
+  const provider = new ethers.JsonRpcProvider(
     "https://sepolia.infura.io/v3/7a796da878ac4152a6b3bfcb4fc794cb"
   );
 
@@ -128,7 +138,8 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
   const generateWallet = async (password: string) => {
     try {
       setIsLoading(true);
-      const newWallet = ethers.Wallet.createRandom();
+      const newHDWallet = ethers.Wallet.createRandom();
+      const newWallet = new ethers.Wallet(newHDWallet.privateKey);
 
       // Connect wallet to Infura provider
       const connectedWallet = newWallet.connect(provider);
@@ -342,23 +353,23 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
 
     try {
       // Validate recipient address
-      if (!ethers.utils.isAddress(to)) {
+      if (!ethers.isAddress(to)) {
         throw new Error("Invalid recipient address");
       }
 
       // Parse amount to Wei
-      const amountWei = ethers.utils.parseEther(amount);
+      const amountWei = ethers.parseEther(amount);
 
       // Get current nonce
-      const nonce = await wallet.getTransactionCount();
+      const nonce = await wallet.provider?.getTransactionCount(wallet.address);
 
       // Get current gas price if not provided
-      let gasPriceWei: ethers.BigNumber;
+      let gasPriceWei: ethers.BigNumberish;
       if (gasPrice) {
-        gasPriceWei = ethers.utils.parseUnits(gasPrice, "gwei");
+        gasPriceWei = ethers.parseUnits(gasPrice, "gwei");
       } else {
         // Use a default gas price for Sepolia (20 gwei)
-        gasPriceWei = ethers.utils.parseUnits("20", "gwei");
+        gasPriceWei = ethers.parseUnits("20", "gwei");
       }
 
       // Create transaction object
@@ -375,7 +386,7 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
       const signedTx = await wallet.signTransaction(tx);
 
       // Calculate transaction hash
-      const txHash = ethers.utils.keccak256(signedTx);
+      const txHash = ethers.keccak256(signedTx);
 
       return {
         signedTx: signedTx,
@@ -399,20 +410,20 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
 
     try {
       // Validate recipient address
-      if (!ethers.utils.isAddress(to)) {
+      if (!ethers.isAddress(to)) {
         throw new Error("Invalid recipient address");
       }
 
       // Parse amount to Wei
-      const amountWei = ethers.utils.parseEther(amount);
+      const amountWei = ethers.parseEther(amount);
 
       // Get current gas price if not provided
-      let gasPriceWei: ethers.BigNumber;
+      let gasPriceWei: ethers.BigNumberish;
       if (gasPrice) {
-        gasPriceWei = ethers.utils.parseUnits(gasPrice, "gwei");
+        gasPriceWei = ethers.parseUnits(gasPrice, "gwei");
       } else {
         // Use a default gas price for Sepolia (20 gwei)
-        gasPriceWei = ethers.utils.parseUnits("20", "gwei");
+        gasPriceWei = ethers.parseUnits("20", "gwei");
       }
 
       // Create transaction object
@@ -444,8 +455,11 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
     if (!wallet) {
       throw new Error("No wallet loaded");
     }
-    const balance = await wallet.getBalance();
-    return ethers.utils.formatEther(balance);
+    const balance = await wallet.provider?.getBalance(wallet.address);
+    if (!balance) {
+      throw new Error("Failed to get balance");
+    }
+    return ethers.formatEther(balance);
   };
 
   const deployMultiSig = async (
@@ -460,15 +474,73 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
       // @ts-ignore
       const bytecode = MultiSigJson.bytecode?.object || MultiSigJson.bytecode;
       const factory = new ethers.ContractFactory(abi, bytecode, signer);
-      if (!signers.every((addr) => ethers.utils.isAddress(addr))) {
+      if (!signers.every((addr) => ethers.isAddress(addr))) {
         throw new Error("All signers must be valid Ethereum addresses");
       }
+
       const contract = await factory.deploy(signers, minSignatures);
-      await contract.deployed();
-      return contract.address;
+      return contract.getAddress();
     } catch (e: any) {
       console.error("Error deploying MultiSig contract:", e);
       throw e;
+    }
+  };
+
+  const sendErc20Transaction = async (
+    tokenAddress: string,
+    to: string,
+    amount: string,
+    gasPrice?: string
+  ) => {
+    if (!wallet) {
+      throw new Error("No wallet loaded");
+    }
+
+    try {
+      // Validate recipient address
+      if (!ethers.isAddress(to)) {
+        throw new Error("Invalid recipient address");
+      }
+
+      // Parse amount to Wei
+      const amountWei = ethers.parseEther(amount);
+
+      // Get current gas price if not provided
+      let gasPriceWei: ethers.BigNumberish;
+      if (gasPrice) {
+        gasPriceWei = ethers.parseUnits(gasPrice, "gwei");
+      } else {
+        // Use a default gas price for Sepolia (20 gwei)
+        gasPriceWei = ethers.parseUnits("20", "gwei");
+      }
+
+      // Create transaction object
+      const tx = {
+        to: to,
+        value: amountWei,
+        gasPrice: gasPriceWei,
+        gasLimit: 21000, // Standard gas limit for ETH transfer
+        chainId: 11155111, // Sepolia chain ID
+      };
+
+      const contract = new ethers.Contract(tokenAddress, Erc20Json.abi, wallet);
+
+      // Send the transaction directly (ethers will handle signing and broadcasting)
+      const transaction = await contract["transfer(address,uint256)"](
+        to,
+        amountWei
+      );
+
+      // Wait for the transaction to be mined
+      const receipt = await transaction.wait();
+
+      return {
+        txHash: transaction.hash,
+        receipt: receipt,
+      };
+    } catch (error) {
+      console.error("Error sending ERC20 transaction:", error);
+      throw error;
     }
   };
 
@@ -487,6 +559,7 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
     sendTransaction,
     getBalance,
     deployMultiSig,
+    sendErc20Transaction,
   };
 
   return (

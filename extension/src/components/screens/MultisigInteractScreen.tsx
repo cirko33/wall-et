@@ -12,8 +12,17 @@ interface MultisigInteractScreenProps {
   contractAddress: string;
 }
 
-interface TransactionDataLocal extends TransactionData {
+interface TransactionDataLocal {
   hash: string;
+  to: string;
+  amount: string;
+  proposer: string;
+  timestamp: string;
+  signedCount: string;
+  executed: boolean;
+  balance: string;
+  native: boolean;
+  token: string;
 }
 
 const MultisigInteractScreen: React.FC<MultisigInteractScreenProps> = ({
@@ -55,13 +64,44 @@ const MultisigInteractScreen: React.FC<MultisigInteractScreenProps> = ({
 
   const [txHashes, setTxHashes] = useState<string[]>([]);
 
+  const [selectedTxHash, setSelectedTxHash] = useState<string | undefined>(
+    undefined
+  );
+  const [selectedTx, setSelectedTx] = useState<TransactionDataLocal | null>(
+    null
+  );
+
+  const bigNumberishToString = (
+    value: ethers.BigNumberish,
+    inEther: boolean = false
+  ) => {
+    if (typeof value === "string") {
+      return value;
+    }
+
+    return inEther ? ethers.formatEther(value) : value.toString();
+  };
+
   // Fetch transaction details for all hashes in local storage
   const fetchTransactions = async () => {
     const hashes = getMultisigTxs(contractAddress);
     const details = await Promise.all(
       hashes.map(async (hash) => {
         const data = await getTransactionData(hash);
-        return data ? { hash, ...data } : null;
+        if (!data) return null;
+
+        return {
+          hash,
+          to: data.to,
+          amount: bigNumberishToString(data.amount, true),
+          proposer: data.proposer,
+          timestamp: bigNumberishToString(data.timestamp),
+          signedCount: bigNumberishToString(data.signedCount),
+          executed: data.executed,
+          balance: bigNumberishToString(data.balance, true),
+          native: data.native,
+          token: data.token,
+        };
       })
     );
 
@@ -81,6 +121,25 @@ const MultisigInteractScreen: React.FC<MultisigInteractScreenProps> = ({
     // eslint-disable-next-line
   }, [activeTab]);
 
+  useEffect(() => {
+    if (txHashes.length > 0) {
+      if (!selectedTxHash || !txHashes.includes(selectedTxHash)) {
+        setSelectedTxHash(txHashes[0]);
+      }
+    } else {
+      setSelectedTxHash(undefined);
+    }
+  }, [txHashes]);
+
+  useEffect(() => {
+    if (selectedTxHash && txs.length > 0) {
+      const found = txs.find((tx) => tx.hash === selectedTxHash);
+      setSelectedTx(found || null);
+    } else {
+      setSelectedTx(null);
+    }
+  }, [selectedTxHash, txs]);
+
   // Handlers for each action
   const handlePropose = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -90,14 +149,10 @@ const MultisigInteractScreen: React.FC<MultisigInteractScreenProps> = ({
     try {
       let txHash: string | null = null;
       if (proposeType === "native") {
-        txHash = await proposeNative(to, ethers.utils.parseEther(value));
+        txHash = await proposeNative(to, ethers.parseEther(value));
       } else {
         if (!tokenAddress) return setError("Token address required");
-        txHash = await proposeToken(
-          to,
-          ethers.utils.parseEther(value),
-          tokenAddress
-        );
+        txHash = await proposeToken(to, ethers.parseEther(value), tokenAddress);
       }
       if (!txHash) throw new Error("Failed to propose transaction");
       addMultisigTx(contractAddress, txHash);
@@ -117,14 +172,14 @@ const MultisigInteractScreen: React.FC<MultisigInteractScreenProps> = ({
     setLoading(true);
     try {
       if (depositType === "native") {
-        await depositNative(depositTxId, ethers.utils.parseEther(depositValue));
+        await depositNative(depositTxId, ethers.parseEther(depositValue));
         alert("Native deposit successful");
       } else {
         if (!depositTokenAddress) return setError("Token address required");
         await depositToken(
           depositTxId,
           depositTokenAddress,
-          ethers.utils.parseEther(depositValue)
+          ethers.parseEther(depositValue)
         );
         alert("Token deposit successful");
       }
@@ -423,28 +478,59 @@ const MultisigInteractScreen: React.FC<MultisigInteractScreenProps> = ({
               {txs.length === 0 ? (
                 <div>No transactions found.</div>
               ) : (
-                <ul>
-                  {txs.map((tx, idx) => (
-                    <li
-                      key={idx}
-                      style={{ fontFamily: "monospace", fontSize: 14 }}
+                <>
+                  <div className="form-group">
+                    <label htmlFor="tx-hash-dropdown">
+                      Select Transaction Hash:
+                    </label>
+                    <select
+                      id="tx-hash-dropdown"
+                      className="input"
+                      style={{ width: "100%", marginBottom: 16 }}
+                      value={
+                        txHashes.length > 0
+                          ? typeof selectedTxHash !== "undefined"
+                            ? selectedTxHash
+                            : txHashes[0]
+                          : ""
+                      }
+                      onChange={(e) => setSelectedTxHash(e.target.value)}
                     >
-                      <div>Hash: {tx.hash}</div>
-                      <div>To: {tx.to}</div>
-                      <div>Amount: {tx.amount.toNumber()}</div>
-                      <div>Proposer: {tx.proposer}</div>
-                      <div>Signed: {tx.signedCount.toNumber()}</div>
-                      <div>Executed: {tx.executed ? "Yes" : "No"}</div>
-                      <div>Balance: {tx.balance.toNumber()}</div>
-                      <div>Timestamp: {tx.timestamp.toNumber()}</div>
-                      {tx.native ? (
+                      {txHashes.map((hash) => (
+                        <option value={hash} key={hash}>
+                          {hash}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  {selectedTx && (
+                    <div
+                      style={{
+                        fontFamily: "monospace",
+                        fontSize: 14,
+                        background: "#1e293b",
+                        padding: 12,
+                        borderRadius: 8,
+                      }}
+                    >
+                      <div style={{ wordBreak: "break-all" }}>
+                        Hash: {selectedTx.hash}
+                      </div>
+                      <div>To: {selectedTx.to}</div>
+                      <div>Amount: {selectedTx.amount}</div>
+                      <div>Proposer: {selectedTx.proposer}</div>
+                      <div>Signed: {selectedTx.signedCount}</div>
+                      <div>Executed: {selectedTx.executed ? "Yes" : "No"}</div>
+                      <div>Balance: {selectedTx.balance}</div>
+                      <div>Timestamp: {selectedTx.timestamp}</div>
+                      {selectedTx.native ? (
                         <div>Native: Yes</div>
                       ) : (
-                        <div>Token: {tx.token}</div>
+                        <div>Token: {selectedTx.token}</div>
                       )}
-                    </li>
-                  ))}
-                </ul>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           )}

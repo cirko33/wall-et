@@ -31,9 +31,9 @@ interface MultisigContractContextType {
     token: string,
     amount: ethers.BigNumberish
   ) => Promise<boolean | undefined>;
-  getBalance: () => Promise<ethers.BigNumber | null>;
-  getTxBalance: (txHash: string) => Promise<ethers.BigNumber | null>;
-  getTokenBalance: (token: string) => Promise<ethers.BigNumber | null>;
+  getBalance: () => Promise<ethers.BigNumberish | null>;
+  getTxBalance: (txHash: string) => Promise<ethers.BigNumberish | null>;
+  getTokenBalance: (token: string) => Promise<ethers.BigNumberish | null>;
   getTransactionData: (txHash: string) => Promise<TransactionData | null>;
 }
 
@@ -50,12 +50,12 @@ export interface TransactionData {
   to: string;
   native: boolean;
   token: string;
-  amount: ethers.BigNumber;
+  amount: ethers.BigNumberish;
   proposer: string;
-  timestamp: ethers.BigNumber;
-  signedCount: ethers.BigNumber;
+  timestamp: ethers.BigNumberish;
+  signedCount: ethers.BigNumberish;
   executed: boolean;
-  balance: ethers.BigNumber;
+  balance: ethers.BigNumberish;
 }
 
 export const MultisigContractProvider: React.FC<
@@ -67,7 +67,7 @@ export const MultisigContractProvider: React.FC<
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!wallet || !ethers.utils.isAddress(contractAddress)) {
+    if (!wallet || !ethers.isAddress(contractAddress)) {
       setContract(null);
       setIsLoading(false);
       return;
@@ -97,7 +97,7 @@ export const MultisigContractProvider: React.FC<
       }
 
       console.log(receipt);
-      return receipt.events[0].data;
+      return receipt.logs[0].data;
     } catch (err: any) {
       setError(err.message);
       return null;
@@ -117,11 +117,12 @@ export const MultisigContractProvider: React.FC<
         token
       );
       const receipt = await tx.wait();
+      console.log("🚀 ~ receipt:", receipt);
       if (receipt.status !== 1) {
         throw new Error("Transaction failed with status: " + receipt.status);
       }
       console.log(receipt);
-      return receipt.events[0].data;
+      return receipt.logs[0].data;
     } catch (err: any) {
       setError(err.message);
       return null;

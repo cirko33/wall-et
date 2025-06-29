@@ -3,6 +3,7 @@ import { useWallet } from "../providers/WalletProvider";
 
 interface WalletScreenProps {
   onSendEth: () => void;
+  onSendErc20: () => void;
   onCreateNewWallet: () => void;
   onViewPrivateKey: () => void;
   onUploadMultisig: () => void;
@@ -10,6 +11,7 @@ interface WalletScreenProps {
 
 const WalletScreen: React.FC<WalletScreenProps> = ({
   onSendEth,
+  onSendErc20,
   onCreateNewWallet,
   onViewPrivateKey,
   onUploadMultisig,
@@ -107,6 +109,13 @@ const WalletScreen: React.FC<WalletScreenProps> = ({
         <div className="wallet-actions">
           <button className="btn btn-primary" onClick={onSendEth}>
             Send ETH
+          </button>
+          <button
+            className="btn btn-primary"
+            onClick={onSendErc20}
+            style={{ marginTop: 8 }}
+          >
+            Send ERC20 Token
           </button>
           <button className="btn btn-secondary" onClick={onViewPrivateKey}>
             View Private Key

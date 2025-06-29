@@ -14,6 +14,7 @@ import MultisigScreen from "./screens/MultisigScreen";
 import { Screen } from "../types";
 import MultisigInteractScreen from "./screens/MultisigInteractScreen";
 import { MultisigContractProvider } from "./providers/MultisigContractProvider";
+import SendErc20Screen from "./screens/SendErc20Screen";
 
 const App = () => {
   const {
@@ -114,6 +115,7 @@ const App = () => {
         component = (
           <WalletScreen
             onSendEth={() => setCurrentScreen("send")}
+            onSendErc20={() => setCurrentScreen("send-erc20")}
             onCreateNewWallet={() => setCurrentScreen("password-setup")}
             onViewPrivateKey={() => setCurrentScreen("view-private-key")}
             onUploadMultisig={() => setCurrentScreen("multisig")}
@@ -122,6 +124,11 @@ const App = () => {
         break;
       case "send":
         component = <SendScreen onBack={() => setCurrentScreen("wallet")} />;
+        break;
+      case "send-erc20":
+        component = (
+          <SendErc20Screen onBack={() => setCurrentScreen("wallet")} />
+        );
         break;
       case "view-private-key":
         component = (
@@ -153,6 +160,7 @@ const App = () => {
         component = (
           <WalletScreen
             onSendEth={() => setCurrentScreen("send")}
+            onSendErc20={() => setCurrentScreen("send-erc20")}
             onCreateNewWallet={() => setCurrentScreen("password-setup")}
             onViewPrivateKey={() => setCurrentScreen("view-private-key")}
             onUploadMultisig={() => setCurrentScreen("multisig")}

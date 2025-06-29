@@ -22,6 +22,8 @@ const MultisigScreen: React.FC<MultisigScreenProps> = ({
   const { deployMultiSig } = useWallet();
   const [isLoading, setIsLoading] = useState(false);
   const [savedMultisigs, setSavedMultisigs] = useState<string[]>([]);
+  const [customMultisig, setCustomMultisig] = useState<string>("");
+  const [customMultisigError, setCustomMultisigError] = useState<string>("");
 
   useEffect(() => {
     setSavedMultisigs(getMultisigContracts());
@@ -31,7 +33,7 @@ const MultisigScreen: React.FC<MultisigScreenProps> = ({
   const validateAddresses = (addrs: string[]) => {
     return addrs.map((addr, idx) => {
       if (!addr.trim()) return "";
-      if (!ethers.utils.isAddress(addr.trim())) return "Invalid address";
+      if (!ethers.isAddress(addr.trim())) return "Invalid address";
       // Check for duplicates (case-insensitive)
       const lower = addr.trim().toLowerCase();
       const firstIdx = addrs.findIndex((a) => a.trim().toLowerCase() === lower);
@@ -129,6 +131,33 @@ const MultisigScreen: React.FC<MultisigScreenProps> = ({
     ).length;
     if (minSignatures > validCount) setMinSignatures(validCount || 1);
   }, [addresses]);
+
+  // Add a custom multisig address to the saved list if valid and not already present
+  const handleAddCustomMultisig = () => {
+    const addr = customMultisig.trim();
+    if (!addr) {
+      setCustomMultisigError("");
+      return;
+    }
+    if (!ethers.isAddress(addr)) {
+      setCustomMultisigError("Invalid address");
+      return;
+    }
+    setCustomMultisigError("");
+    if (!savedMultisigs.includes(addr)) {
+      addMultisigContract(addr);
+      setSavedMultisigs(getMultisigContracts());
+    }
+    setCustomMultisig("");
+    onOpenMultisigInteract(addr);
+  };
+
+  // Remove a multisig address from the saved list
+  const handleRemoveSavedMultisig = (addr: string) => {
+    const updated = savedMultisigs.filter((a) => a !== addr);
+    localStorage.setItem("multisigContracts", JSON.stringify(updated));
+    setSavedMultisigs(updated);
+  };
 
   return (
     <div className="container">
@@ -229,21 +258,83 @@ const MultisigScreen: React.FC<MultisigScreenProps> = ({
           </form>
         </div>
 
+        {/* Multisig Interact Section */}
+        <div className="multisig-interact" style={{ marginBottom: 24 }}>
+          <h3>Interact with MultiSig Contract</h3>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <input
+              list="saved-multisigs-list"
+              className="input"
+              placeholder="Enter or select multisig address"
+              value={customMultisig}
+              onChange={(e) => {
+                setCustomMultisig(e.target.value);
+                if (e.target.value && !ethers.isAddress(e.target.value)) {
+                  setCustomMultisigError("Invalid address");
+                } else {
+                  setCustomMultisigError("");
+                }
+              }}
+              disabled={isLoading}
+              style={{ width: 340 }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  handleAddCustomMultisig();
+                }
+              }}
+            />
+            <datalist id="saved-multisigs-list">
+              {savedMultisigs.map((addr) => (
+                <option value={addr} key={addr} />
+              ))}
+            </datalist>
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={handleAddCustomMultisig}
+              disabled={isLoading || !customMultisig || !!customMultisigError}
+            >
+              Go
+            </button>
+          </div>
+          {customMultisigError && (
+            <div className="warning" style={{ marginTop: 4 }}>
+              {customMultisigError}
+            </div>
+          )}
+        </div>
+        {/* Saved Multisigs Management Section */}
         {savedMultisigs.length > 0 && (
           <div className="saved-multisigs" style={{ marginBottom: 24 }}>
-            <h3>Saved MultiSig Contracts (click to interact)</h3>
-            <ul>
+            <h4>Saved MultiSig Contracts</h4>
+            <ul style={{ paddingLeft: 16 }}>
               {savedMultisigs.map((addr, idx) => (
                 <li
                   key={addr}
                   style={{
                     fontFamily: "monospace",
                     fontSize: 14,
-                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
                   }}
-                  onClick={() => onOpenMultisigInteract(addr)}
                 >
-                  {idx + 1}. {addr}
+                  <span
+                    style={{ cursor: "pointer" }}
+                    title="Open multisig"
+                    onClick={() => onOpenMultisigInteract(addr)}
+                  >
+                    {idx + 1}. {addr}
+                  </span>
+                  <button
+                    type="button"
+                    className="btn-icon"
+                    title="Remove from saved"
+                    onClick={() => handleRemoveSavedMultisig(addr)}
+                    style={{ color: "#c00", marginLeft: 8 }}
+                  >
+                    🗑️
+                  </button>
                 </li>
               ))}
             </ul>

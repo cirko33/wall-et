@@ -24,7 +24,7 @@
   "dependencies": {
     "@types/crypto-js": "^4.2.2",
     "crypto-js": "^4.2.0",
-    "ethers": "^5.7.2",
+    "ethers": "^6.14.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
@@ -47,10 +47,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/yourusername/sepolia-eth-wallet-extension.git"
+    "url": "git+https://github.com/cirko33/wall-et.git"
   },
   "bugs": {
-    "url": "https://github.com/yourusername/sepolia-eth-wallet-extension/issues"
+    "url": "https://github.com/cirko33/wall-et/issues"
   },
-  "homepage": "https://github.com/yourusername/sepolia-eth-wallet-extension#readme"
+  "homepage": "https://github.com/cirko33/wall-et#readme"
 }
