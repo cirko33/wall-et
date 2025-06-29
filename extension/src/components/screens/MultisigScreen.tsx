@@ -189,6 +189,46 @@ const MultisigScreen: React.FC<MultisigScreenProps> = ({
 
   return (
     <div className="container">
+      {isLoading && (
+        <div className="fixed-fullscreen-overlay">
+          <div className="loading-content" style={{
+            background: '#1a1f2e',
+            padding: '32px',
+            borderRadius: '12px',
+            border: '2px solid #3b82f6',
+            boxShadow: '0 20px 40px rgba(0, 0, 0, 0.7)',
+            textAlign: 'center',
+            minWidth: '280px',
+            maxWidth: '320px'
+          }}>
+            <div className="spinner" style={{
+              width: '40px',
+              height: '40px',
+              border: '3px solid #334155',
+              borderTop: '3px solid #3b82f6',
+              borderRadius: '50%',
+              animation: 'spin 1s linear infinite',
+              margin: '0 auto 16px'
+            }}></div>
+            <h3 style={{ color: '#ffffff', marginBottom: '10px', fontSize: '16px' }}>
+              🏗️ Deploying Multisig Contract...
+            </h3>
+            <p style={{ color: '#94a3b8', fontSize: '13px', marginBottom: '12px' }}>
+              Please wait while your multisig contract is being deployed to the blockchain.
+            </p>
+            <div style={{ 
+              background: '#0f1419', 
+              padding: '10px', 
+              borderRadius: '6px', 
+              border: '1px solid #334155',
+              fontSize: '11px',
+              color: '#64748b'
+            }}>
+              This may take a few moments depending on network conditions.
+            </div>
+          </div>
+        </div>
+      )}
       <div className="screen">
         <div className="multisig-content">
           <h2>Deploy MultiSig Contract</h2>

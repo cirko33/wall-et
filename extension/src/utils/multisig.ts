@@ -139,8 +139,8 @@ async function run() {
     console.log("MultiSig contract:", MULTI_SIG_CONTRACT);
 
     await checkDelegationStatus(provider, signer.address);
-    // await revokeDelegation(signer);
     await createDelegation(signer, APPROVER_ADDRESS, RSDC_ADDRESS, MULTI_SIG_CONTRACT, APPROVAL_TX_HASH, 1);
+    // await revokeDelegation(signer);
     await checkDelegationStatus(provider, signer.address);
   } catch (error) {
     console.error("Error in EIP-7702 transactions:", error);
