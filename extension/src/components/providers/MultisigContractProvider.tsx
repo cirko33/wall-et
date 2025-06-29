@@ -14,27 +14,27 @@ interface MultisigContractContextType {
   contract: ethers.Contract | null;
   isLoading: boolean;
   error: string | null;
-  proposeNative: (
-    to: string,
-    amount: ethers.BigNumberish
-  ) => Promise<string | null>;
+  proposeNative: (to: string, amount: ethers.BigNumberish) => Promise<any>;
   proposeToken: (
     to: string,
     amount: ethers.BigNumberish,
     token: string
-  ) => Promise<string | null>;
-  sign: (txHash: string) => Promise<void>;
-  execute: (txHash: string) => Promise<void>;
-  depositNative: (txHash: string, value: ethers.BigNumberish) => Promise<void>;
+  ) => Promise<any>;
+  sign: (txHash: string) => Promise<boolean | undefined>;
+  execute: (txHash: string) => Promise<boolean | undefined>;
+  depositNative: (
+    txHash: string,
+    value: ethers.BigNumberish
+  ) => Promise<boolean | undefined>;
   depositToken: (
     txHash: string,
     token: string,
     amount: ethers.BigNumberish
-  ) => Promise<void>;
+  ) => Promise<boolean | undefined>;
   getBalance: () => Promise<ethers.BigNumber | null>;
   getTxBalance: (txHash: string) => Promise<ethers.BigNumber | null>;
   getTokenBalance: (token: string) => Promise<ethers.BigNumber | null>;
-  getTransactionData: (txHash: string) => Promise<any | null>;
+  getTransactionData: (txHash: string) => Promise<TransactionData | null>;
 }
 
 const MultisigContractContext = createContext<
@@ -44,6 +44,18 @@ const MultisigContractContext = createContext<
 interface MultisigContractProviderProps {
   contractAddress: string;
   children: ReactNode;
+}
+
+interface TransactionData {
+  to: string;
+  native: boolean;
+  token: string;
+  amount: ethers.BigNumberish;
+  proposer: string;
+  timestamp: number;
+  signedCount: number;
+  executed: boolean;
+  balance: ethers.BigNumberish;
 }
 
 export const MultisigContractProvider: React.FC<
@@ -77,14 +89,11 @@ export const MultisigContractProvider: React.FC<
   const proposeNative = async (to: string, amount: ethers.BigNumberish) => {
     if (!contract) return null;
     try {
-      // Get the txHash that will be generated
-      const txHash = await contract.propose(to, amount);
       // Send the transaction
-      const tx = await contract.propose(to, amount);
-      await tx.wait();
-      return txHash;
+      const tx = await contract["propose(address,uint256)"](to, amount);
+      const receipt = await tx.wait();
+      return receipt.events?.[0]?.args?.data;
     } catch (err: any) {
-      console.log("🚀 ~ proposeNative ~ err:", err);
       setError(err.message);
       return null;
     }
@@ -97,10 +106,13 @@ export const MultisigContractProvider: React.FC<
   ) => {
     if (!contract) return null;
     try {
-      const txHash = await contract.callStatic.propose(to, amount, token);
-      const tx = await contract.propose(to, amount, token);
-      await tx.wait();
-      return txHash;
+      const tx = await contract["propose(address,uint256,address)"](
+        to,
+        amount,
+        token
+      );
+      const receipt = await tx.wait();
+      return receipt.events?.[0]?.args?.data;
     } catch (err: any) {
       setError(err.message);
       return null;
@@ -110,8 +122,9 @@ export const MultisigContractProvider: React.FC<
   const sign = async (txHash: string) => {
     if (!contract) return;
     try {
-      const tx = await contract.sign(txHash);
-      await tx.wait();
+      const tx = await contract["sign(bytes32)"](txHash);
+      const receipt = await tx.wait();
+      return receipt.status === 1;
     } catch (err: any) {
       setError(err.message);
     }
@@ -120,8 +133,9 @@ export const MultisigContractProvider: React.FC<
   const execute = async (txHash: string) => {
     if (!contract) return;
     try {
-      const tx = await contract.execute(txHash);
-      await tx.wait();
+      const tx = await contract["execute(bytes32)"](txHash);
+      const receipt = await tx.wait();
+      return receipt.status === 1;
     } catch (err: any) {
       setError(err.message);
     }
@@ -130,8 +144,11 @@ export const MultisigContractProvider: React.FC<
   const depositNative = async (txHash: string, value: ethers.BigNumberish) => {
     if (!contract) return;
     try {
-      const tx = await contract.deposit(txHash, { value });
-      await tx.wait();
+      const tx = await contract["deposit(bytes32)"](txHash, {
+        value: value,
+      });
+      const receipt = await tx.wait();
+      return receipt.status === 1;
     } catch (err: any) {
       setError(err.message);
     }
@@ -144,8 +161,13 @@ export const MultisigContractProvider: React.FC<
   ) => {
     if (!contract) return;
     try {
-      const tx = await contract.deposit(txHash, token, amount);
-      await tx.wait();
+      const tx = await contract["deposit(bytes32,address,uint256)"](
+        txHash,
+        token,
+        amount
+      );
+      const receipt = await tx.wait();
+      return receipt.status === 1;
     } catch (err: any) {
       setError(err.message);
     }
@@ -154,7 +176,7 @@ export const MultisigContractProvider: React.FC<
   const getBalance = async () => {
     if (!contract) return null;
     try {
-      return await contract.getBalance();
+      return await contract["getBalance(address)"](wallet?.address);
     } catch (err: any) {
       setError(err.message);
       return null;
@@ -164,7 +186,7 @@ export const MultisigContractProvider: React.FC<
   const getTxBalance = async (txHash: string) => {
     if (!contract) return null;
     try {
-      return await contract.getBalance(txHash);
+      return await contract["getBalance(bytes32)"](txHash);
     } catch (err: any) {
       setError(err.message);
       return null;
@@ -174,7 +196,7 @@ export const MultisigContractProvider: React.FC<
   const getTokenBalance = async (token: string) => {
     if (!contract) return null;
     try {
-      return await contract.getBalance(token);
+      return await contract["getBalance(address)"](token);
     } catch (err: any) {
       setError(err.message);
       return null;
@@ -184,7 +206,8 @@ export const MultisigContractProvider: React.FC<
   const getTransactionData = async (txHash: string) => {
     if (!contract) return null;
     try {
-      return await contract.transactions(txHash);
+      const data = await contract["transactions(bytes32)"](txHash);
+      return data as TransactionData;
     } catch (err: any) {
       setError(err.message);
       return null;
