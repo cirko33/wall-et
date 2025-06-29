@@ -26,21 +26,21 @@ const SendScreen: React.FC<SendScreenProps> = ({ onBack }) => {
   // Calculate estimated fee and total amount
   const calculateFees = () => {
     const amountNum = parseFloat(amount) || 0;
-    const gasPriceNum = parseInt(gasPrice) || 20;
+    const gasPriceGwei = 20; // Fixed gas price for Sepolia
     const gasLimit = 21000; // Standard for ETH transfer
 
     // Calculate fee in ETH
-    const feeWei = gasLimit * (gasPriceNum * 1e9); // Convert gwei to wei
+    const feeWei = gasLimit * (gasPriceGwei * 1e9); // Convert gwei to wei
     const feeEth = feeWei / 1e18; // Convert wei to ETH
 
     setEstimatedFee(feeEth.toFixed(6));
     setTotalAmount((amountNum + feeEth).toFixed(6));
   };
 
-  // Update calculations when amount or gas price changes
+  // Update calculations when amount changes
   useEffect(() => {
     calculateFees();
-  }, [amount, gasPrice]);
+  }, [amount]);
 
   useEffect(() => {
     setAddressBook(getAddressBook());
@@ -59,11 +59,6 @@ const SendScreen: React.FC<SendScreenProps> = ({ onBack }) => {
 
     if (!amount || parseFloat(amount) <= 0) {
       setError("Please enter a valid amount");
-      return;
-    }
-
-    if (!gasPrice || parseInt(gasPrice) <= 0) {
-      setError("Please enter a valid gas price");
       return;
     }
 
@@ -155,20 +150,6 @@ const SendScreen: React.FC<SendScreenProps> = ({ onBack }) => {
           />
         </div>
 
-        <div className="form-group">
-          <label htmlFor="gas-price">Gas Price (Gwei):</label>
-          <input
-            type="number"
-            id="gas-price"
-            className="input"
-            value={gasPrice}
-            onChange={(e) => setGasPrice(e.target.value)}
-            placeholder="20"
-            step="1"
-            min="1"
-          />
-        </div>
-
         <div className="transaction-summary">
           <div className="summary-item">
             <span>Estimated Fee:</span>
@@ -202,12 +183,6 @@ const SendScreen: React.FC<SendScreenProps> = ({ onBack }) => {
           >
             Back to Wallet
           </button>
-        </div>
-
-        <div className="warning">
-          <strong>ℹ️ Transaction Info:</strong> This extension connects to
-          Sepolia testnet via Infura and sends real transactions. Make sure you
-          have sufficient Sepolia ETH balance before sending transactions.
         </div>
       </div>
     </div>

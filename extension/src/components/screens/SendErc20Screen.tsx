@@ -68,10 +68,6 @@ const SendErc20Screen: React.FC<SendErc20ScreenProps> = ({ onBack }) => {
       setError("Please enter a valid amount");
       return;
     }
-    if (!gasPrice || parseInt(gasPrice) <= 0) {
-      setError("Please enter a valid gas price");
-      return;
-    }
     setIsLoading(true);
     setError("");
     try {
@@ -189,19 +185,6 @@ const SendErc20Screen: React.FC<SendErc20ScreenProps> = ({ onBack }) => {
             min="0"
           />
         </div>
-        <div className="form-group">
-          <label htmlFor="gas-price">Gas Price (Gwei):</label>
-          <input
-            type="number"
-            id="gas-price"
-            className="input"
-            value={gasPrice}
-            onChange={(e) => setGasPrice(e.target.value)}
-            placeholder="20"
-            step="1"
-            min="1"
-          />
-        </div>
         <div className="transaction-summary">
           <div className="summary-item">
             <span>Estimated Fee:</span>
@@ -234,12 +217,6 @@ const SendErc20Screen: React.FC<SendErc20ScreenProps> = ({ onBack }) => {
           >
             Back to Wallet
           </button>
-        </div>
-        <div className="warning">
-          <strong>ℹ️ Transaction Info:</strong> This extension connects to
-          Sepolia testnet via Infura and sends real transactions. Make sure you
-          have sufficient Sepolia ETH for gas and token balance before sending
-          transactions.
         </div>
       </div>
     </div>
