@@ -53,6 +53,7 @@ const MultisigInteractScreen: React.FC<MultisigInteractScreenProps> = ({
     sign,
     execute,
     getTransactionData,
+    getMinSignatures,
     error: contractError,
   } = useMultisigContract();
   const { wallet } = useWallet();
@@ -79,6 +80,7 @@ const MultisigInteractScreen: React.FC<MultisigInteractScreenProps> = ({
 
   const [loading, setLoading] = useState(false);
   const [loadingType, setLoadingType] = useState<"propose" | "deposit" | "sign" | "execute" | null>(null);
+  const [minSignatures, setMinSignatures] = useState<number | null>(null);
 
   const [txHashes, setTxHashes] = useState<string[]>([]);
 
@@ -146,6 +148,19 @@ const MultisigInteractScreen: React.FC<MultisigInteractScreenProps> = ({
     setTxHashes(getMultisigTxs(contractAddress));
     // eslint-disable-next-line
   }, [contractAddress]);
+
+  useEffect(() => {
+    // Fetch minimum signatures required
+    const fetchMinSignatures = async () => {
+      try {
+        const minSig = await getMinSignatures();
+        setMinSignatures(minSig);
+      } catch (err) {
+        console.error("Failed to fetch min signatures:", err);
+      }
+    };
+    fetchMinSignatures();
+  }, [getMinSignatures]);
 
   useEffect(() => {
     if (activeTab === "transactions") {
@@ -432,40 +447,40 @@ const MultisigInteractScreen: React.FC<MultisigInteractScreenProps> = ({
               )}
             </label>
           </div>
-          <div className="button-group margin-16-0">
+          <div className="multisig-tab-buttons">
             <button
-              className={`btn${activeTab === "propose" ? " btn-primary" : ""}`}
+              className={`btn${activeTab === "propose" ? " btn-primary" : " btn-secondary"}`}
               onClick={() => setActiveTab("propose")}
             >
               Propose
             </button>
             <button
-              className={`btn${activeTab === "deposit" ? " btn-primary" : ""}`}
+              className={`btn${activeTab === "deposit" ? " btn-primary" : " btn-secondary"}`}
               onClick={() => setActiveTab("deposit")}
             >
               Deposit
             </button>
             <button
-              className={`btn${activeTab === "sign" ? " btn-primary" : ""}`}
+              className={`btn${activeTab === "sign" ? " btn-primary" : " btn-secondary"}`}
               onClick={() => setActiveTab("sign")}
             >
               Sign
             </button>
             <button
-              className={`btn${activeTab === "execute" ? " btn-primary" : ""}`}
+              className={`btn${activeTab === "execute" ? " btn-primary" : " btn-secondary"}`}
               onClick={() => setActiveTab("execute")}
             >
               Execute
             </button>
             <button
               className={`btn${
-                activeTab === "transactions" ? " btn-primary" : ""
+                activeTab === "transactions" ? " btn-primary" : " btn-secondary"
               }`}
               onClick={() => setActiveTab("transactions")}
             >
               Transactions
             </button>
-            <button className="btn btn-secondary float-right" onClick={onBack}>
+            <button className="btn btn-secondary" onClick={onBack}>
               Back
             </button>
           </div>
@@ -474,24 +489,25 @@ const MultisigInteractScreen: React.FC<MultisigInteractScreenProps> = ({
           )}
           {activeTab === "propose" && (
             <form onSubmit={handlePropose} className="margin-top-16">
-              <div className="margin-bottom-12">
-                <label>
+              <div className="radio-group">
+                <div className={`radio-option ${proposeType === "native" ? "selected" : ""}`}>
                   <input
                     type="radio"
+                    id="propose-native"
                     checked={proposeType === "native"}
                     onChange={() => setProposeType("native")}
                   />
-                  &nbsp;Native
-                </label>
-                &nbsp;&nbsp;
-                <label>
+                  <label htmlFor="propose-native">Native</label>
+                </div>
+                <div className={`radio-option ${proposeType === "token" ? "selected" : ""}`}>
                   <input
                     type="radio"
+                    id="propose-token"
                     checked={proposeType === "token"}
                     onChange={() => setProposeType("token")}
                   />
-                  &nbsp;Token
-                </label>
+                  <label htmlFor="propose-token">Token</label>
+                </div>
               </div>
               <div className="form-group">
                 <label>To (recipient):</label>
@@ -543,31 +559,34 @@ const MultisigInteractScreen: React.FC<MultisigInteractScreenProps> = ({
                   </datalist>
                 </div>
               )}
-              <button className="btn btn-primary" type="submit">
-                Propose
-              </button>
+              <div className="form-actions">
+                <button className="btn btn-primary" type="submit">
+                  Propose
+                </button>
+              </div>
             </form>
           )}
           {activeTab === "deposit" && (
             <form onSubmit={handleDeposit} className="margin-top-16">
-              <div className="margin-bottom-12">
-                <label>
+              <div className="radio-group">
+                <div className={`radio-option ${depositType === "native" ? "selected" : ""}`}>
                   <input
                     type="radio"
+                    id="deposit-native"
                     checked={depositType === "native"}
                     onChange={() => setDepositType("native")}
                   />
-                  &nbsp;Native
-                </label>
-                &nbsp;&nbsp;
-                <label>
+                  <label htmlFor="deposit-native">Native</label>
+                </div>
+                <div className={`radio-option ${depositType === "token" ? "selected" : ""}`}>
                   <input
                     type="radio"
+                    id="deposit-token"
                     checked={depositType === "token"}
                     onChange={() => setDepositType("token")}
                   />
-                  &nbsp;Token
-                </label>
+                  <label htmlFor="deposit-token">Token</label>
+                </div>
               </div>
               <div className="form-group">
                 <label>Transaction ID:</label>
@@ -617,9 +636,11 @@ const MultisigInteractScreen: React.FC<MultisigInteractScreenProps> = ({
                   </datalist>
                 </div>
               )}
-              <button className="btn btn-primary" type="submit">
-                Deposit
-              </button>
+              <div className="form-actions">
+                <button className="btn btn-primary" type="submit">
+                  Deposit
+                </button>
+              </div>
             </form>
           )}
           {activeTab === "sign" && (
@@ -640,9 +661,11 @@ const MultisigInteractScreen: React.FC<MultisigInteractScreenProps> = ({
                   ))}
                 </datalist>
               </div>
-              <button className="btn btn-primary" type="submit">
-                Sign
-              </button>
+              <div className="form-actions">
+                <button className="btn btn-primary" type="submit">
+                  Sign
+                </button>
+              </div>
             </form>
           )}
           {activeTab === "execute" && (
@@ -663,21 +686,34 @@ const MultisigInteractScreen: React.FC<MultisigInteractScreenProps> = ({
                   ))}
                 </datalist>
               </div>
-              <button className="btn btn-primary" type="submit">
-                Execute
-              </button>
+              <div className="form-actions">
+                <button className="btn btn-primary" type="submit">
+                  Execute
+                </button>
+              </div>
             </form>
           )}
           {activeTab === "transactions" && (
             <div className="margin-top-16">
-              <h3>Transactions</h3>
+              <h3>Transaction History</h3>
               {txs.length === 0 ? (
-                <div>No transactions found.</div>
+                <div style={{
+                  textAlign: 'center',
+                  padding: '40px 20px',
+                  color: '#64748b',
+                  fontSize: '14px',
+                  background: '#0f1419',
+                  borderRadius: '12px',
+                  border: '1px solid #334155'
+                }}>
+                  <div style={{ fontSize: '24px', marginBottom: '12px' }}>📋</div>
+                  No transactions found for this contract
+                </div>
               ) : (
                 <>
                   <div className="form-group">
                     <label htmlFor="tx-hash-dropdown">
-                      Select Transaction Hash:
+                      Select Transaction:
                     </label>
                     <select
                       id="tx-hash-dropdown"
@@ -692,28 +728,271 @@ const MultisigInteractScreen: React.FC<MultisigInteractScreenProps> = ({
                       }
                       onChange={(e) => setSelectedTxHash(e.target.value)}
                     >
-                      {txHashes.map((hash) => (
+                      {txHashes.map((hash, index) => (
                         <option value={hash} key={hash}>
-                          {hash}
+                          Transaction #{index + 1} - {hash.substring(0, 8)}...{hash.substring(hash.length - 6)}
                         </option>
                       ))}
                     </select>
                   </div>
                   {selectedTx && (
-                    <div className="word-break-all margin-bottom-4">
-                      <div>Hash: {selectedTx.hash}</div>
-                      <div>To: {selectedTx.to}</div>
-                      <div>Amount: {selectedTx.amount}</div>
-                      <div>Proposer: {selectedTx.proposer}</div>
-                      <div>Signed: {selectedTx.signedCount}</div>
-                      <div>Executed: {selectedTx.executed ? "Yes" : "No"}</div>
-                      <div>Balance: {selectedTx.balance}</div>
-                      <div>Timestamp: {selectedTx.timestamp}</div>
-                      {selectedTx.native ? (
-                        <div>Native: Yes</div>
-                      ) : (
-                        <div>Token: {selectedTx.token}</div>
-                      )}
+                    <div style={{
+                      background: '#0f1419',
+                      borderRadius: '12px',
+                      border: '1px solid #334155',
+                      overflow: 'hidden'
+                    }}>
+                      {/* Transaction Header */}
+                      <div style={{
+                        background: 'linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)',
+                        padding: '16px 20px',
+                        borderBottom: '1px solid #334155'
+                      }}>
+                        <div style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          marginBottom: '8px'
+                        }}>
+                          <h4 style={{
+                            color: '#ffffff',
+                            fontSize: '16px',
+                            fontWeight: '600',
+                            margin: '0'
+                          }}>
+                            Transaction Details
+                          </h4>
+                          <div style={{
+                            background: selectedTx.executed ? 'rgba(16, 185, 129, 0.2)' : 'rgba(245, 158, 11, 0.2)',
+                            color: selectedTx.executed ? '#10b981' : '#f59e0b',
+                            padding: '4px 12px',
+                            borderRadius: '20px',
+                            fontSize: '12px',
+                            fontWeight: '600',
+                            border: `1px solid ${selectedTx.executed ? '#10b981' : '#f59e0b'}`
+                          }}>
+                            {selectedTx.executed ? '✅ Executed' : '⏳ Pending'}
+                          </div>
+                        </div>
+                        <div style={{
+                          color: '#e2e8f0',
+                          fontSize: '12px',
+                          fontFamily: 'monospace',
+                          wordBreak: 'break-all'
+                        }}>
+                          {selectedTx.hash}
+                        </div>
+                      </div>
+
+                      {/* Transaction Content */}
+                      <div style={{ padding: '20px' }}>
+                        <div style={{
+                          display: 'grid',
+                          gridTemplateColumns: '1fr 1fr',
+                          gap: '16px',
+                          marginBottom: '20px'
+                        }}>
+                          {/* Left Column */}
+                          <div>
+                            <div style={{
+                              background: '#1a1f2e',
+                              padding: '12px',
+                              borderRadius: '8px',
+                              border: '1px solid #334155',
+                              marginBottom: '12px'
+                            }}>
+                              <div style={{
+                                color: '#94a3b8',
+                                fontSize: '11px',
+                                fontWeight: '600',
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.5px',
+                                marginBottom: '4px'
+                              }}>
+                                Recipient
+                              </div>
+                              <div style={{
+                                color: '#ffffff',
+                                fontSize: '13px',
+                                fontFamily: 'monospace',
+                                wordBreak: 'break-all'
+                              }}>
+                                {selectedTx.to}
+                              </div>
+                            </div>
+
+                            <div style={{
+                              background: '#1a1f2e',
+                              padding: '12px',
+                              borderRadius: '8px',
+                              border: '1px solid #334155',
+                              marginBottom: '12px'
+                            }}>
+                              <div style={{
+                                color: '#94a3b8',
+                                fontSize: '11px',
+                                fontWeight: '600',
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.5px',
+                                marginBottom: '4px'
+                              }}>
+                                Amount
+                              </div>
+                              <div style={{
+                                color: '#ffffff',
+                                fontSize: '16px',
+                                fontWeight: '600'
+                              }}>
+                                {selectedTx.amount} {selectedTx.native ? 'ETH' : 'Tokens'}
+                              </div>
+                            </div>
+
+                            <div style={{
+                              background: '#1a1f2e',
+                              padding: '12px',
+                              borderRadius: '8px',
+                              border: '1px solid #334155'
+                            }}>
+                              <div style={{
+                                color: '#94a3b8',
+                                fontSize: '11px',
+                                fontWeight: '600',
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.5px',
+                                marginBottom: '4px'
+                              }}>
+                                Type
+                              </div>
+                              <div style={{
+                                color: '#ffffff',
+                                fontSize: '13px',
+                                fontWeight: '500'
+                              }}>
+                                {selectedTx.native ? '🪙 Native ETH' : `🪙 ERC-20 Token`}
+                              </div>
+                              {!selectedTx.native && (
+                                <div style={{
+                                  color: '#64748b',
+                                  fontSize: '11px',
+                                  fontFamily: 'monospace',
+                                  marginTop: '4px',
+                                  wordBreak: 'break-all'
+                                }}>
+                                  {selectedTx.token}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Right Column */}
+                          <div>
+                            <div style={{
+                              background: '#1a1f2e',
+                              padding: '12px',
+                              borderRadius: '8px',
+                              border: '1px solid #334155',
+                              marginBottom: '12px'
+                            }}>
+                              <div style={{
+                                color: '#94a3b8',
+                                fontSize: '11px',
+                                fontWeight: '600',
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.5px',
+                                marginBottom: '4px'
+                              }}>
+                                Proposer
+                              </div>
+                              <div style={{
+                                color: '#ffffff',
+                                fontSize: '13px',
+                                fontFamily: 'monospace',
+                                wordBreak: 'break-all'
+                              }}>
+                                {selectedTx.proposer}
+                              </div>
+                            </div>
+
+                            <div style={{
+                              background: '#1a1f2e',
+                              padding: '12px',
+                              borderRadius: '8px',
+                              border: '1px solid #334155',
+                              marginBottom: '12px'
+                            }}>
+                              <div style={{
+                                color: '#94a3b8',
+                                fontSize: '11px',
+                                fontWeight: '600',
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.5px',
+                                marginBottom: '4px'
+                              }}>
+                                Signatures
+                              </div>
+                              <div style={{
+                                color: '#ffffff',
+                                fontSize: '16px',
+                                fontWeight: '600'
+                              }}>
+                                {selectedTx.signedCount} / {minSignatures}
+                              </div>
+                            </div>
+
+                            <div style={{
+                              background: '#1a1f2e',
+                              padding: '12px',
+                              borderRadius: '8px',
+                              border: '1px solid #334155'
+                            }}>
+                              <div style={{
+                                color: '#94a3b8',
+                                fontSize: '11px',
+                                fontWeight: '600',
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.5px',
+                                marginBottom: '4px'
+                              }}>
+                                Contract Balance
+                              </div>
+                              <div style={{
+                                color: '#ffffff',
+                                fontSize: '16px',
+                                fontWeight: '600'
+                              }}>
+                                {selectedTx.balance} {selectedTx.native ? 'ETH' : 'Tokens'}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Bottom Info */}
+                        <div style={{
+                          background: '#1a1f2e',
+                          padding: '12px',
+                          borderRadius: '8px',
+                          border: '1px solid #334155',
+                          textAlign: 'center'
+                        }}>
+                          <div style={{
+                            color: '#94a3b8',
+                            fontSize: '11px',
+                            fontWeight: '600',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.5px',
+                            marginBottom: '4px'
+                          }}>
+                            Timestamp
+                          </div>
+                          <div style={{
+                            color: '#ffffff',
+                            fontSize: '13px',
+                            fontFamily: 'monospace'
+                          }}>
+                            {new Date(parseInt(selectedTx.timestamp) * 1000).toLocaleString()}
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   )}
                 </>

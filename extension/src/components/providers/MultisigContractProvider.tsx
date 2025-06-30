@@ -36,6 +36,7 @@ interface MultisigContractContextType {
   getTxBalance: (txHash: string) => Promise<ethers.BigNumberish | null>;
   getTokenBalance: (token: string) => Promise<ethers.BigNumberish | null>;
   getTransactionData: (txHash: string) => Promise<TransactionData | null>;
+  getMinSignatures: () => Promise<number | null>;
 }
 
 const MultisigContractContext = createContext<
@@ -237,6 +238,17 @@ export const MultisigContractProvider: React.FC<
     }
   };
 
+  const getMinSignatures = async () => {
+    if (!contract) return null;
+    try {
+      const result = await contract.minSignatures();
+      return Number(result);
+    } catch (err: any) {
+      setError(err.message);
+      return null;
+    }
+  };
+
   const value = useMemo(
     () => ({
       contract,
@@ -252,6 +264,7 @@ export const MultisigContractProvider: React.FC<
       getTxBalance,
       getTokenBalance,
       getTransactionData,
+      getMinSignatures,
     }),
     [contract, isLoading, error]
   );

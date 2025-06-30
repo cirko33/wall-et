@@ -115,10 +115,10 @@ const WalletScreen: React.FC<WalletScreenProps> = ({
             Send ERC20 Token
           </button>
           <button className="btn btn-secondary" onClick={onViewTokens}>
-            View Tokens
+            Tokens
           </button>
           <button className="btn btn-secondary" onClick={onViewAddressBook}>
-            View Address Book
+            Address Book
           </button>
           <hr className="hr-wallet" />
           <button className="btn btn-secondary" onClick={onUploadMultisig}>
