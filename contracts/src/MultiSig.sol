@@ -23,6 +23,11 @@ contract MultiSig is IMultiSig {
     mapping(bytes32 => Transaction) public transactions;
     mapping(bytes32 => mapping(address => bool)) public transactionSigners;
 
+    modifier onlySigner() {
+        require(signers[msg.sender], "Only signers can call this function");
+        _;
+    }
+
     /**
      * @dev Constructor - sets up validators and minimum signatures
      * @param _signers Array of validator addresses
@@ -78,7 +83,6 @@ contract MultiSig is IMultiSig {
         address to,
         uint256 amount
     ) external returns (bytes32 txHash) {
-        require(signers[msg.sender], "Only signers can propose");
         require(to != address(0), "Invalid target address");
 
         Transaction memory transaction = Transaction({
@@ -107,7 +111,6 @@ contract MultiSig is IMultiSig {
         uint256 amount,
         address token
     ) external returns (bytes32 txHash) {
-        require(signers[msg.sender], "Only signers can propose");
         require(to != address(0), "Invalid target address");
         require(token != address(0), "Invalid token address");
         require(address(this).code.length > 0, "Contract not deployed");
@@ -138,12 +141,11 @@ contract MultiSig is IMultiSig {
 
     //sign
 
-    function sign(bytes32 txHash) external {
+    function sign(bytes32 txHash) external onlySigner {
         Transaction storage transaction = transactions[txHash];
 
         require(!transaction.executed, "Transaction already executed");
         require(!transactionSigners[txHash][msg.sender], "Already signed");
-        require(signers[msg.sender], "Only signers can sign");
 
         transactionSigners[txHash][msg.sender] = true;
         transaction.signedCount++;
@@ -151,7 +153,7 @@ contract MultiSig is IMultiSig {
 
     //execute
 
-    function execute(bytes32 txHash) external {
+    function execute(bytes32 txHash) external onlySigner {
         Transaction storage transaction = transactions[txHash];
         require(transaction.proposer != address(0), "Transaction not found");
         require(
@@ -159,7 +161,7 @@ contract MultiSig is IMultiSig {
             "Not enough signatures"
         );
         require(!transaction.executed, "Transaction already executed");
-        require(signers[msg.sender], "Only signers can execute");
+
         if (transaction.native) {
             require(
                 transaction.balance >= transaction.amount,
@@ -191,7 +193,9 @@ contract MultiSig is IMultiSig {
         }
     }
 
-    function getTransaction(bytes32 txHash) external view returns (Transaction memory) {
+    function getTransaction(
+        bytes32 txHash
+    ) external view returns (Transaction memory) {
         return transactions[txHash];
     }
 }

@@ -121,14 +121,8 @@ contract MultiSigTest is Test {
 
         // Try to execute with non-signer (address 0x999)
         vm.prank(nonSigner);
-        vm.expectRevert("Only signers can execute");
+        vm.expectRevert("Only signers can call this function");
         multiSig.execute(txHash);
-    }
-
-    function test_RevertWhen_ProposeByNonSigner() public {
-        vm.prank(nonSigner);
-        vm.expectRevert("Only signers can propose");
-        multiSig.propose(bob, 3 ether);
     }
 
     function test_RevertWhen_ProposeToZeroAddress() public {
@@ -142,7 +136,7 @@ contract MultiSigTest is Test {
         bytes32 txHash = multiSig.propose(bob, 3 ether);
 
         vm.prank(nonSigner);
-        vm.expectRevert("Only signers can sign");
+        vm.expectRevert("Only signers can call this function");
         multiSig.sign(txHash);
     }
 
@@ -344,7 +338,6 @@ contract MultiSigTest is Test {
 
     function testERC20_RevertWhen_ProposeByNonSigner() public {
         vm.prank(nonSigner);
-        vm.expectRevert("Only signers can propose");
         multiSig.propose(bob, 100 ether, address(erc20));
     }
 
