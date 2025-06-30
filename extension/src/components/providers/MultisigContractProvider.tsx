@@ -10,6 +10,7 @@ import { ethers } from "ethers";
 import MultiSigJson from "../../../contracts/MultiSig.json";
 import { useWallet } from "./WalletProvider";
 import { createDelegation, revokeDelegation } from "../../utils/multisig";
+import { config } from "../../config";
 
 interface MultisigContractContextType {
   contract: ethers.Contract | null;
@@ -371,8 +372,7 @@ export const MultisigContractProvider: React.FC<
     if (!contract || !wallet) return;
     try {
       const multisigContractAddress = await contract.getAddress();
-      const approverContractAddress =
-        "0x2732d3c8f33bbb34411de6420fd085339f781cd4";
+      const approverContractAddress = config.APPROVER_CONTRACT;
 
       console.log("amount", amount);
 

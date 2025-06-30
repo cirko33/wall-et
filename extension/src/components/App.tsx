@@ -24,6 +24,8 @@ import MultisigDeploymentSuccessScreen from "./screens/MultisigDeploymentSuccess
 import MultisigTransactionSuccessScreen from "./screens/MultisigTransactionSuccessScreen";
 import RecoveryContractScreen from "./screens/RecoveryContractScreen";
 import { RecoveryContractProvider } from "./providers/RecoveryContractProvider";
+import RecoveryContractDeploymentSuccessScreen from "./screens/RecoveryContractDeploymentSuccessScreen";
+import RecoveryContractActionSuccessScreen from "./screens/RecoveryContractActionSuccessScreen";
 
 const App = () => {
   const {
@@ -70,6 +72,28 @@ const App = () => {
     recipientAddress?: string;
     amount?: string;
     tokenAddress?: string;
+    signerAddress: string;
+    chainId: number;
+    timestamp: number;
+  } | null>(null);
+  const [recoveryContractDeploymentSuccess, setRecoveryContractDeploymentSuccess] = useState<{
+    contractAddress: string;
+    recoveryAddresses: string[];
+    quorum: number;
+    deployerAddress: string;
+    chainId: number;
+    timestamp: number;
+  } | null>(null);
+  const [recoveryContractActionSuccess, setRecoveryContractActionSuccess] = useState<{
+    actionType: "deploy" | "addRecoveryAddress" | "removeRecoveryAddress" | "setQuorum" | "recover" | "tokenApproval";
+    txHash: string;
+    contractAddress: string;
+    actionDetails: {
+      address?: string;
+      quorum?: number;
+      recoverTo?: string;
+      tokens?: string[];
+    };
     signerAddress: string;
     chainId: number;
     timestamp: number;
@@ -199,6 +223,46 @@ const App = () => {
   const handleCloseMultisigTransactionSuccess = () => {
     setMultisigTransactionSuccess(null);
     setCurrentScreen("multisig-interact");
+  };
+
+  const handleRecoveryContractDeploymentSuccess = (deploymentData: {
+    contractAddress: string;
+    recoveryAddresses: string[];
+    quorum: number;
+    deployerAddress: string;
+    chainId: number;
+    timestamp: number;
+  }) => {
+    setRecoveryContractDeploymentSuccess(deploymentData);
+    setCurrentScreen("recovery-contract-deployment-success");
+  };
+
+  const handleCloseRecoveryContractDeploymentSuccess = () => {
+    setRecoveryContractDeploymentSuccess(null);
+    setCurrentScreen("recovery-contract");
+  };
+
+  const handleRecoveryContractActionSuccess = (actionData: {
+    actionType: "deploy" | "addRecoveryAddress" | "removeRecoveryAddress" | "setQuorum" | "recover" | "tokenApproval";
+    txHash: string;
+    contractAddress: string;
+    actionDetails: {
+      address?: string;
+      quorum?: number;
+      recoverTo?: string;
+      tokens?: string[];
+    };
+    signerAddress: string;
+    chainId: number;
+    timestamp: number;
+  }) => {
+    setRecoveryContractActionSuccess(actionData);
+    setCurrentScreen("recovery-contract-action-success");
+  };
+
+  const handleCloseRecoveryContractActionSuccess = () => {
+    setRecoveryContractActionSuccess(null);
+    setCurrentScreen("recovery-contract");
   };
 
   const handleOpenMultisigInteract = (addr: string) => {
@@ -351,8 +415,53 @@ const App = () => {
           <RecoveryContractProvider contractAddress={currentContractAddress}>
             <RecoveryContractScreen
               setProviderContractAddress={setCurrentContractAddress}
+              onRecoveryContractDeploymentSuccess={handleRecoveryContractDeploymentSuccess}
+              onRecoveryContractActionSuccess={handleRecoveryContractActionSuccess}
             />
           </RecoveryContractProvider>
+        );
+        break;
+      case "recovery-contract-deployment-success":
+        component = recoveryContractDeploymentSuccess ? (
+          <RecoveryContractDeploymentSuccessScreen
+            contractAddress={recoveryContractDeploymentSuccess.contractAddress}
+            recoveryAddresses={recoveryContractDeploymentSuccess.recoveryAddresses}
+            quorum={recoveryContractDeploymentSuccess.quorum}
+            deployerAddress={recoveryContractDeploymentSuccess.deployerAddress}
+            chainId={recoveryContractDeploymentSuccess.chainId}
+            timestamp={recoveryContractDeploymentSuccess.timestamp}
+            onClose={handleCloseRecoveryContractDeploymentSuccess}
+          />
+        ) : (
+          <WalletScreen
+            onSendEth={() => setCurrentScreen("send")}
+            onSendErc20={() => setCurrentScreen("send-erc20")}
+            onUploadMultisig={() => setCurrentScreen("multisig")}
+            onViewTokens={() => setCurrentScreen("tokens")}
+            onViewAddressBook={() => setCurrentScreen("address-book")}
+          />
+        );
+        break;
+      case "recovery-contract-action-success":
+        component = recoveryContractActionSuccess ? (
+          <RecoveryContractActionSuccessScreen
+            actionType={recoveryContractActionSuccess.actionType}
+            txHash={recoveryContractActionSuccess.txHash}
+            contractAddress={recoveryContractActionSuccess.contractAddress}
+            actionDetails={recoveryContractActionSuccess.actionDetails}
+            signerAddress={recoveryContractActionSuccess.signerAddress}
+            chainId={recoveryContractActionSuccess.chainId}
+            timestamp={recoveryContractActionSuccess.timestamp}
+            onClose={handleCloseRecoveryContractActionSuccess}
+          />
+        ) : (
+          <WalletScreen
+            onSendEth={() => setCurrentScreen("send")}
+            onSendErc20={() => setCurrentScreen("send-erc20")}
+            onUploadMultisig={() => setCurrentScreen("multisig")}
+            onViewTokens={() => setCurrentScreen("tokens")}
+            onViewAddressBook={() => setCurrentScreen("address-book")}
+          />
         );
         break;
       default:

@@ -14,6 +14,8 @@ export type Screen =
   | "address-book"
   | "sign-out"
   | "recovery-contract"
+  | "recovery-contract-deployment-success"
+  | "recovery-contract-action-success"
   | "transaction-success"
   | "multisig-deployment-success"
   | "multisig-transaction-success";

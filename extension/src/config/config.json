@@ -1,4 +1,4 @@
 {
-    "APPROVER_CONTRACT": "0x2732d3c8f33bbb34411de6420fd085339f781cd4",
-    "RPC_URL": "https://sepolia.infura.io/v3/7a796da878ac4152a6b3bfcb4fc794cb"
+  "APPROVER_CONTRACT": "0xDc6442e8899281962D7e70A69116dF15090539FC",
+  "RPC_URL": "https://sepolia.infura.io/v3/7a796da878ac4152a6b3bfcb4fc794cb"
 }

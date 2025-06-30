@@ -9,7 +9,33 @@ const RECOVERY_CONTRACT_KEY = "recovery-contract";
 
 const RecoveryContractScreen: React.FC<{
   setProviderContractAddress: (address: string) => void;
-}> = ({ setProviderContractAddress }) => {
+  onRecoveryContractDeploymentSuccess?: (deploymentData: {
+    contractAddress: string;
+    recoveryAddresses: string[];
+    quorum: number;
+    deployerAddress: string;
+    chainId: number;
+    timestamp: number;
+  }) => void;
+  onRecoveryContractActionSuccess?: (actionData: {
+    actionType: "deploy" | "addRecoveryAddress" | "removeRecoveryAddress" | "setQuorum" | "recover" | "tokenApproval";
+    txHash: string;
+    contractAddress: string;
+    actionDetails: {
+      address?: string;
+      quorum?: number;
+      recoverTo?: string;
+      tokens?: string[];
+    };
+    signerAddress: string;
+    chainId: number;
+    timestamp: number;
+  }) => void;
+}> = ({ 
+  setProviderContractAddress, 
+  onRecoveryContractDeploymentSuccess,
+  onRecoveryContractActionSuccess 
+}) => {
   // Wallet and contract context
   const { address: walletAddress } = useWallet();
   const {
@@ -193,7 +219,14 @@ const RecoveryContractScreen: React.FC<{
       setContractAddress(deployedAddress);
       setProviderContractAddress(deployedAddress);
       localStorage.setItem(RECOVERY_CONTRACT_KEY, deployedAddress);
-      alert("Social Recovery contract deployed at: " + deployedAddress);
+      onRecoveryContractDeploymentSuccess?.({
+        contractAddress: deployedAddress,
+        recoveryAddresses: filtered,
+        quorum: quorum,
+        deployerAddress: walletAddress || "",
+        chainId: 11155111, // Sepolia
+        timestamp: Date.now(),
+      });
     } catch (e: any) {
       setDeployError(e.message || "Failed to deploy contract");
     } finally {
@@ -209,7 +242,17 @@ const RecoveryContractScreen: React.FC<{
       if (!ethers.isAddress(addRecoveryInput))
         throw new Error("Invalid address");
       await addRecoveryAddress(addRecoveryInput);
-      alert("Recovery address added");
+      onRecoveryContractActionSuccess?.({
+        actionType: "addRecoveryAddress",
+        txHash: "", // Placeholder for txHash
+        contractAddress: contractAddress,
+        actionDetails: {
+          address: addRecoveryInput,
+        },
+        signerAddress: walletAddress || "",
+        chainId: 11155111, // Sepolia
+        timestamp: Date.now(),
+      });
       setAddRecoveryInput("");
     } catch (e: any) {
       setOwnerActionError(e.message || "Failed to add recovery address");
@@ -224,7 +267,17 @@ const RecoveryContractScreen: React.FC<{
       if (!ethers.isAddress(removeRecoveryInput))
         throw new Error("Invalid address");
       await removeRecoveryAddress(removeRecoveryInput);
-      alert("Recovery address removed");
+      onRecoveryContractActionSuccess?.({
+        actionType: "removeRecoveryAddress",
+        txHash: "", // Placeholder for txHash
+        contractAddress: contractAddress,
+        actionDetails: {
+          address: removeRecoveryInput,
+        },
+        signerAddress: walletAddress || "",
+        chainId: 11155111, // Sepolia
+        timestamp: Date.now(),
+      });
       setRemoveRecoveryInput("");
     } catch (e: any) {
       setOwnerActionError(e.message || "Failed to remove recovery address");
@@ -237,7 +290,17 @@ const RecoveryContractScreen: React.FC<{
     setOwnerActionError("");
     try {
       await setQuorum(quorum);
-      alert("Quorum updated");
+      onRecoveryContractActionSuccess?.({
+        actionType: "setQuorum",
+        txHash: "", // Placeholder for txHash
+        contractAddress: contractAddress,
+        actionDetails: {
+          quorum: quorum,
+        },
+        signerAddress: walletAddress || "",
+        chainId: 11155111, // Sepolia
+        timestamp: Date.now(),
+      });
     } catch (e: any) {
       setOwnerActionError(e.message || "Failed to set quorum");
     } finally {
@@ -255,7 +318,17 @@ const RecoveryContractScreen: React.FC<{
       if (!ethers.isAddress(recoverTo))
         throw new Error("Invalid address to recover to");
       await recover(recoverTo);
-      alert("Recovery vote submitted");
+      onRecoveryContractActionSuccess?.({
+        actionType: "recover",
+        txHash: "", // Placeholder for txHash
+        contractAddress: selectedRecoveryAddress,
+        actionDetails: {
+          recoverTo: recoverTo,
+        },
+        signerAddress: walletAddress || "",
+        chainId: 11155111, // Sepolia
+        timestamp: Date.now(),
+      });
       setRecoverTo("");
     } catch (e: any) {
       setRecoveryActionError(e.message || "Failed to submit recovery");
@@ -264,9 +337,55 @@ const RecoveryContractScreen: React.FC<{
     }
   };
 
+  // Check if any loading state is active
+  const isAnyLoading = deployLoading || ownerActionLoading || recoveryActionLoading || handleAllTokensLoading;
+
   // UI
   return (
     <div className="container">
+      {isAnyLoading && (
+        <div className="fixed-fullscreen-overlay">
+          <div className="loading-content" style={{
+            background: '#1a1f2e',
+            padding: '32px',
+            borderRadius: '12px',
+            border: '2px solid #3b82f6',
+            boxShadow: '0 20px 40px rgba(0, 0, 0, 0.7)',
+            textAlign: 'center',
+            minWidth: '280px',
+            maxWidth: '320px'
+          }}>
+            <div className="spinner" style={{
+              width: '40px',
+              height: '40px',
+              border: '3px solid #334155',
+              borderTop: '3px solid #3b82f6',
+              borderRadius: '50%',
+              animation: 'spin 1s linear infinite',
+              margin: '0 auto 16px'
+            }}></div>
+            <h3 style={{ color: '#ffffff', marginBottom: '10px', fontSize: '16px' }}>
+              {deployLoading && "🏗️ Deploying Recovery Contract..."}
+              {ownerActionLoading && "⚙️ Processing Owner Action..."}
+              {recoveryActionLoading && "🔄 Submitting Recovery Vote..."}
+              {handleAllTokensLoading && "🔐 Processing Token Approvals..."}
+            </h3>
+            <p style={{ color: '#94a3b8', fontSize: '13px', marginBottom: '12px' }}>
+              Please wait while your transaction is being processed on the blockchain.
+            </p>
+            <div style={{ 
+              background: '#0f1419', 
+              padding: '10px', 
+              borderRadius: '6px', 
+              border: '1px solid #334155',
+              fontSize: '11px',
+              color: '#64748b'
+            }}>
+              This may take a few moments depending on network conditions.
+            </div>
+          </div>
+        </div>
+      )}
       <div className="screen">
         {/* Upper Section: Deploy or Interact as Owner */}
         {!contractAddress ? (
@@ -313,7 +432,7 @@ const RecoveryContractScreen: React.FC<{
                     <option
                       value={address}
                       key={address}
-                      label={name ? `${name}` : address}
+                      label={name ? `${address} (${name})` : address}
                     />
                   ))}
                 </datalist>
@@ -366,21 +485,42 @@ const RecoveryContractScreen: React.FC<{
         ) : (
           <div className="multisig-content">
             <h2>Social Recovery Contract</h2>
-            <div className="margin-bottom-12">
-              <span className="font-bold-16">Address:</span>
-              <span className="font-monospace-14 margin-left-8">
-                {contractAddress}
-              </span>
+            
+            {/* Contract Info Section */}
+            <div className="contract-info-section" style={{
+              background: '#1a1f2e',
+              padding: '20px',
+              borderRadius: '12px',
+              border: '1px solid #334155',
+              marginBottom: '24px'
+            }}>
+              <div className="margin-bottom-12">
+                <span className="font-bold-16">Contract Address:</span>
+                <span className="font-monospace-14 margin-left-8" style={{ color: '#3b82f6' }}>
+                  {contractAddress}
+                </span>
+              </div>
+              
+              {!isLoading && (
+                <div className="margin-bottom-12">
+                  <span className="font-bold-16">Current Quorum:</span>
+                  <span className="margin-left-8" style={{ color: '#10b981' }}>
+                    {currentQuorum ?? "-"}
+                  </span>
+                </div>
+              )}
             </div>
-            <div className="margin-bottom-12">
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 8,
-                }}
-              >
+
+            {/* Token Approval Section */}
+            <div className="token-approval-section" style={{
+              background: '#1a1f2e',
+              padding: '20px',
+              borderRadius: '12px',
+              border: '1px solid #334155',
+              marginBottom: '24px'
+            }}>
+              <h4 style={{ marginBottom: '16px', color: '#ffffff' }}>Token Management</h4>
+              <div className="button-group">
                 <button
                   className="btn btn-primary"
                   onClick={async () => {
@@ -389,7 +529,17 @@ const RecoveryContractScreen: React.FC<{
                     try {
                       const tokens = Object.keys(getTokenAddressBook());
                       const result = await handleAllTokensApproval(tokens);
-                      console.log(result);
+                      onRecoveryContractActionSuccess?.({
+                        actionType: "tokenApproval",
+                        txHash: "", // Placeholder for txHash
+                        contractAddress: contractAddress,
+                        actionDetails: {
+                          tokens: tokens,
+                        },
+                        signerAddress: walletAddress || "",
+                        chainId: 11155111, // Sepolia
+                        timestamp: Date.now(),
+                      });
                     } catch (e: any) {
                       setHandleAllTokensError(
                         e.message || "Failed to handle all tokens approval"
@@ -406,114 +556,128 @@ const RecoveryContractScreen: React.FC<{
                 </button>
               </div>
               {handleAllTokensError && (
-                <div className="warning margin-top-4">
+                <div className="warning margin-top-8">
                   {handleAllTokensError}
                 </div>
               )}
             </div>
 
-            {isLoading ? (
-              <div>Loading contract info...</div>
-            ) : (
-              <>
-                <div className="margin-bottom-12">
-                  <span className="font-bold-16">Quorum:</span>
-                  <span className="margin-left-8">{currentQuorum ?? "-"}</span>
+            {/* Owner Actions Section */}
+            {isOwner && !isLoading && (
+              <div className="owner-actions-section" style={{
+                background: '#1a1f2e',
+                padding: '20px',
+                borderRadius: '12px',
+                border: '1px solid #334155',
+                marginBottom: '24px'
+              }}>
+                <h4 style={{ marginBottom: '20px', color: '#ffffff' }}>Owner Actions</h4>
+                
+                <div className="form-group" style={{ marginBottom: '20px' }}>
+                  <label style={{ marginBottom: '8px', display: 'block' }}>Add Recovery Address:</label>
+                  <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                    <input
+                      type="text"
+                      className="input"
+                      value={addRecoveryInput}
+                      onChange={(e) => setAddRecoveryInput(e.target.value)}
+                      placeholder="0x..."
+                      disabled={ownerActionLoading}
+                      list="address-book-list"
+                      style={{ flex: 1 }}
+                    />
+                    <button
+                      className="btn btn-primary"
+                      onClick={handleAddRecoveryAddress}
+                      disabled={ownerActionLoading || !addRecoveryInput}
+                      style={{ minWidth: '80px' }}
+                    >
+                      Add
+                    </button>
+                  </div>
                 </div>
-                {isOwner && (
-                  <div className="margin-bottom-24">
-                    <h4>Owner Actions</h4>
-                    <div className="form-group">
-                      <label>Add Recovery Address:</label>
-                      <input
-                        type="text"
-                        className="input"
-                        value={addRecoveryInput}
-                        onChange={(e) => setAddRecoveryInput(e.target.value)}
-                        placeholder="0x..."
-                        disabled={ownerActionLoading}
-                        list="address-book-list"
-                      />
-                      <datalist id="address-book-list">
-                        {addressBook.map(({ address, name }) => (
-                          <option
-                            value={address}
-                            key={address}
-                            label={name ? `${name}` : address}
-                          />
-                        ))}
-                      </datalist>
-                      <button
-                        className="btn btn-primary margin-top-8"
-                        onClick={handleAddRecoveryAddress}
-                        disabled={ownerActionLoading || !addRecoveryInput}
-                      >
-                        Add
-                      </button>
-                    </div>
-                    <div className="form-group">
-                      <label>Remove Recovery Address:</label>
-                      <input
-                        type="text"
-                        className="input"
-                        value={removeRecoveryInput}
-                        onChange={(e) => setRemoveRecoveryInput(e.target.value)}
-                        placeholder="0x..."
-                        disabled={ownerActionLoading}
-                        list="address-book-list"
-                      />
-                      <datalist id="address-book-list">
-                        {addressBook.map(({ address, name }) => (
-                          <option
-                            value={address}
-                            key={address}
-                            label={name ? `${name}` : address}
-                          />
-                        ))}
-                      </datalist>
-                      <button
-                        className="btn btn-secondary margin-top-8"
-                        onClick={handleRemoveRecoveryAddress}
-                        disabled={ownerActionLoading || !removeRecoveryInput}
-                      >
-                        Remove
-                      </button>
-                    </div>
-                    <div className="form-group">
-                      <label>Set Quorum:</label>
-                      <input
-                        type="number"
-                        className="input"
-                        min={1}
-                        value={quorum}
-                        onChange={(e) => setQuorumInput(Number(e.target.value))}
-                        disabled={ownerActionLoading}
-                      />
-                      <button
-                        className="btn btn-primary margin-top-8"
-                        onClick={handleSetQuorum}
-                        disabled={ownerActionLoading}
-                      >
-                        Set Quorum
-                      </button>
-                    </div>
-                    {ownerActionError && (
-                      <div className="warning margin-top-4">
-                        {ownerActionError}
-                      </div>
-                    )}
+
+                <div className="form-group" style={{ marginBottom: '20px' }}>
+                  <label style={{ marginBottom: '8px', display: 'block' }}>Remove Recovery Address:</label>
+                  <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                    <input
+                      type="text"
+                      className="input"
+                      value={removeRecoveryInput}
+                      onChange={(e) => setRemoveRecoveryInput(e.target.value)}
+                      placeholder="0x..."
+                      disabled={ownerActionLoading}
+                      list="address-book-list"
+                      style={{ flex: 1 }}
+                    />
+                    <button
+                      className="btn btn-secondary"
+                      onClick={handleRemoveRecoveryAddress}
+                      disabled={ownerActionLoading || !removeRecoveryInput}
+                      style={{ minWidth: '80px' }}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label style={{ marginBottom: '8px', display: 'block' }}>Set Quorum:</label>
+                  <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                    <input
+                      type="number"
+                      className="input"
+                      min={1}
+                      value={quorum}
+                      onChange={(e) => setQuorumInput(Number(e.target.value))}
+                      disabled={ownerActionLoading}
+                      style={{ flex: 1 }}
+                    />
+                    <button
+                      className="btn btn-primary"
+                      onClick={handleSetQuorum}
+                      disabled={ownerActionLoading}
+                      style={{ minWidth: '100px' }}
+                    >
+                      Set Quorum
+                    </button>
+                  </div>
+                </div>
+
+                {ownerActionError && (
+                  <div className="warning margin-top-12">
+                    {ownerActionError}
                   </div>
                 )}
-              </>
+              </div>
+            )}
+
+            {isLoading && (
+              <div style={{ 
+                textAlign: 'center', 
+                padding: '40px', 
+                color: '#94a3b8',
+                background: '#1a1f2e',
+                borderRadius: '12px',
+                border: '1px solid #334155'
+              }}>
+                Loading contract info...
+              </div>
             )}
           </div>
         )}
 
-        {/* Lower Section: Recovery Actions */}
-        <div className="margin-top-24">
-          <h3>Recovery Actions</h3>
-          <div className="form-group">
-            <label>Recovery Contract Address:</label>
+        {/* Recovery Actions Section */}
+        <div className="recovery-actions-section" style={{
+          background: '#1a1f2e',
+          padding: '20px',
+          borderRadius: '12px',
+          border: '1px solid #334155'
+        }}>
+          <h3 style={{ marginBottom: '20px', color: '#ffffff' }}>Recovery Actions</h3>
+          
+          <div className="form-group" style={{ marginBottom: '20px' }}>
+            <label style={{ marginBottom: '8px', display: 'block' }}>Recovery Contract Address:</label>
             <input
               type="text"
               className="input"
@@ -525,12 +689,13 @@ const RecoveryContractScreen: React.FC<{
             />
             <datalist id="address-book-list">
               {addressBook.map(({ address, name }) => (
-                <option value={address} key={address} label={name || address} />
+                <option value={address} key={address} label={name ? `${address} (${name})` : address} />
               ))}
             </datalist>
           </div>
-          <div className="form-group">
-            <label>Recover To Address:</label>
+
+          <div className="form-group" style={{ marginBottom: '20px' }}>
+            <label style={{ marginBottom: '8px', display: 'block' }}>Recover To Address:</label>
             <input
               type="text"
               className="input"
@@ -542,10 +707,11 @@ const RecoveryContractScreen: React.FC<{
             />
             <datalist id="address-book-list">
               {addressBook.map(({ address, name }) => (
-                <option value={address} key={address} label={name || address} />
+                <option value={address} key={address} label={name ? `${address} (${name})` : address} />
               ))}
             </datalist>
           </div>
+
           <div className="button-group">
             <button
               className="btn btn-primary"
@@ -557,8 +723,11 @@ const RecoveryContractScreen: React.FC<{
               {recoveryActionLoading ? "Submitting..." : "Submit Recovery Vote"}
             </button>
           </div>
+
           {recoveryActionError && (
-            <div className="warning margin-top-4">{recoveryActionError}</div>
+            <div className="warning margin-top-12">
+              {recoveryActionError}
+            </div>
           )}
         </div>
       </div>
