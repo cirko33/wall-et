@@ -296,9 +296,9 @@ body {
 
 .wallet-actions .btn {
   width: 100%;
-  justify-content: flex-start;
+  justify-content: center;
   padding: 10px 14px;
-  text-align: left;
+  text-align: center;
 }
 
 .transaction-history h3 {
@@ -402,7 +402,7 @@ body {
   display: none;
 }
 
-.btn::before {
+/* .btn::before {
   content: "";
   width: 16px;
   height: 16px;
@@ -411,7 +411,7 @@ body {
   background-position: center;
   opacity: 0.8;
   margin-right: 8px;
-}
+} */
 
 /* Primary button - Send/Transfer icon */
 .btn-primary::before {
