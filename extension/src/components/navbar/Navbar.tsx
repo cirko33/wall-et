@@ -1,7 +1,15 @@
 import wallETIcon from "../../../icons/wall-et-blue-nobg.png";
 import React, { useState } from "react";
 import { Screen } from "../../types";
-import { MdMenu, MdLock, MdVisibility, MdLogout } from "react-icons/md";
+import {
+  MdMenu,
+  MdLock,
+  MdVisibility,
+  MdLogout,
+  MdOutlineSettings,
+  MdOutlineHistory,
+} from "react-icons/md";
+import { useWallet } from "../providers/WalletProvider";
 
 const Navbar: React.FC<{
   onLock?: () => void;
@@ -21,6 +29,7 @@ const Navbar: React.FC<{
   setCurrentScreen,
 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { address } = useWallet();
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -77,8 +86,17 @@ const Navbar: React.FC<{
                 className="burger-menu-item"
                 onClick={() => handleMenuAction(onRecoveryContract)}
               >
-                <MdLogout size={20} />
+                <MdOutlineSettings size={20} />
                 <span>Recovery Contract</span>
+              </button>
+              <button
+                className="burger-menu-item"
+                onClick={() =>
+                  window.open("https://sepolia.etherscan.io/address/" + address)
+                }
+              >
+                <MdOutlineHistory size={20} />
+                <span>Transactions</span>
               </button>
               <button
                 className="burger-menu-item burger-menu-item-danger"

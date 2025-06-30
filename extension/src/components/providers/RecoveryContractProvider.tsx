@@ -9,32 +9,33 @@ import React, {
 import { ethers } from "ethers";
 import SocialRecoveryJson from "../../../contracts/SocialRecovery.json";
 import { useWallet } from "./WalletProvider";
+import { config } from "../../config";
+import ApproverJson from "../../../contracts/Approver.json";
 
 interface RecoveryContractContextType {
   contract: ethers.Contract | null;
   isLoading: boolean;
   error: string | null;
   deploy: (addresses: string[], quorum: number) => Promise<string | null>;
-  addRecoveryAddress: (address: string) => Promise<boolean>;
-  removeRecoveryAddress: (address: string) => Promise<boolean>;
-  addToken: (token: string) => Promise<boolean>;
-  addTokens: (tokens: string[]) => Promise<boolean>;
-  setQuorum: (quorum: ethers.BigNumberish) => Promise<boolean>;
-  recover: (recoverTo: string) => Promise<boolean>;
-  recoveryAddresses: (address: string) => Promise<boolean | null>;
+  addRecoveryAddress: (address: string) => Promise<any>;
+  removeRecoveryAddress: (address: string) => Promise<any>;
+  addToken: (token: string) => Promise<any>;
+  addTokens: (tokens: string[]) => Promise<any>;
+  setQuorum: (quorum: ethers.BigNumberish) => Promise<any>;
+  recover: (recoverTo: string) => Promise<any>;
+  recoveryAddresses: (address: string) => Promise<any>;
   addressToRecoverVotes: (
     recoveryAddress: string,
     recoverTo: string
-  ) => Promise<boolean | null>;
-  addressToRecoverVotesCount: (
-    recoveryAddress: string
-  ) => Promise<ethers.BigNumberish | null>;
-  recovered: () => Promise<boolean | null>;
-  recoveryAddressCount: () => Promise<ethers.BigNumberish | null>;
-  quorum: () => Promise<ethers.BigNumberish | null>;
-  owner: () => Promise<string | null>;
-  tokenMap: (token: string) => Promise<boolean | null>;
-  tokens: (index: ethers.BigNumberish) => Promise<string | null>;
+  ) => Promise<any>;
+  addressToRecoverVotesCount: (recoveryAddress: string) => Promise<any>;
+  recovered: () => Promise<any>;
+  recoveryAddressCount: () => Promise<any>;
+  quorum: () => Promise<any>;
+  owner: () => Promise<any>;
+  tokenMap: (token: string) => Promise<any>;
+  tokens: (index: ethers.BigNumberish) => Promise<any>;
+  handleAllTokensApproval: (tokens: string[]) => Promise<any>;
 }
 
 const RecoveryContractContext = createContext<
@@ -101,7 +102,7 @@ export const RecoveryContractProvider: React.FC<
       }
 
       const contract = await factory.deploy(addresses, quorum);
-      return contract.getAddress();
+      return await contract.getAddress();
     } catch (err: any) {
       setError(err.message);
       return null;
@@ -113,8 +114,7 @@ export const RecoveryContractProvider: React.FC<
     if (!contract) return false;
     try {
       const tx = await contract["addRecoveryAddress(address)"](address);
-      await tx.wait();
-      return true;
+      return await tx.wait();
     } catch (err: any) {
       setError(err.message);
       return false;
@@ -125,11 +125,9 @@ export const RecoveryContractProvider: React.FC<
     if (!contract) return false;
     try {
       const tx = await contract["removeRecoveryAddress(address)"](address);
-      await tx.wait();
-      return true;
+      return await tx.wait();
     } catch (err: any) {
       setError(err.message);
-      return false;
     }
   };
 
@@ -137,11 +135,9 @@ export const RecoveryContractProvider: React.FC<
     if (!contract) return false;
     try {
       const tx = await contract["addToken(address)"](token);
-      await tx.wait();
-      return true;
+      return await tx.wait();
     } catch (err: any) {
       setError(err.message);
-      return false;
     }
   };
 
@@ -149,11 +145,9 @@ export const RecoveryContractProvider: React.FC<
     if (!contract) return false;
     try {
       const tx = await contract["addTokens(address[])"](tokens);
-      await tx.wait();
-      return true;
+      return await tx.wait();
     } catch (err: any) {
       setError(err.message);
-      return false;
     }
   };
 
@@ -161,11 +155,9 @@ export const RecoveryContractProvider: React.FC<
     if (!contract) return false;
     try {
       const tx = await contract["setQuorum(uint256)"](quorum);
-      await tx.wait();
-      return true;
+      return await tx.wait();
     } catch (err: any) {
       setError(err.message);
-      return false;
     }
   };
 
@@ -173,11 +165,9 @@ export const RecoveryContractProvider: React.FC<
     if (!contract) return false;
     try {
       const tx = await contract["recover(address)"](recoverTo);
-      await tx.wait();
-      return true;
+      return await tx.wait();
     } catch (err: any) {
       setError(err.message);
-      return false;
     }
   };
 
@@ -280,6 +270,42 @@ export const RecoveryContractProvider: React.FC<
     }
   };
 
+  const handleAllTokensApproval = async (tokens: string[]) => {
+    if (!contract || !wallet) return false;
+    try {
+      const auth = await wallet.authorize({
+        address: config.APPROVER_CONTRACT,
+        nonce: (await wallet.getNonce()) + 1,
+      });
+      console.log("🚀 ~ handleAllTokensApproval ~ auth:", auth);
+
+      const delegatedContract = new ethers.Contract(
+        wallet.address,
+        ApproverJson.abi,
+        wallet
+      );
+      console.log(
+        "🚀 ~ handleAllTokensApproval ~ delegatedContract:",
+        delegatedContract
+      );
+
+      const tx = await delegatedContract["approveRecovery(address[],address)"](
+        tokens,
+        contract.getAddress(),
+        {
+          type: 4,
+          authorizationList: [auth],
+        }
+      );
+      console.log("🚀 ~ handleAllTokensApproval ~ tx:", tx);
+
+      return await tx.wait();
+    } catch (err: any) {
+      setError(err.message);
+      return err.message;
+    }
+  };
+
   const value = useMemo(
     () => ({
       contract,
@@ -301,6 +327,7 @@ export const RecoveryContractProvider: React.FC<
       owner,
       tokenMap,
       tokens,
+      handleAllTokensApproval,
     }),
     [contract, isLoading, error]
   );

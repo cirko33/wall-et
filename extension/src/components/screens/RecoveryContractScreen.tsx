@@ -3,6 +3,7 @@ import { ethers } from "ethers";
 import { useRecoveryContract } from "../providers/RecoveryContractProvider";
 import { useWallet } from "../providers/WalletProvider";
 import { getAddressBook } from "../../utils/addressBookStorage";
+import { getTokenAddressBook } from "../../utils/tokenAddressBookStorage";
 
 const RECOVERY_CONTRACT_KEY = "recovery-contract";
 
@@ -24,6 +25,7 @@ const RecoveryContractScreen: React.FC<{
     recoveryAddresses,
     recoveryAddressCount,
     recover,
+    handleAllTokensApproval,
   } = useRecoveryContract();
 
   // State for contract address
@@ -54,6 +56,10 @@ const RecoveryContractScreen: React.FC<{
   const [removeRecoveryInput, setRemoveRecoveryInput] = useState("");
   const [ownerActionLoading, setOwnerActionLoading] = useState(false);
   const [ownerActionError, setOwnerActionError] = useState("");
+
+  // State for Handle All Tokens Approval
+  const [handleAllTokensLoading, setHandleAllTokensLoading] = useState(false);
+  const [handleAllTokensError, setHandleAllTokensError] = useState("");
 
   // On mount, load contract address from storage and address book
   useEffect(() => {
@@ -307,7 +313,7 @@ const RecoveryContractScreen: React.FC<{
                     <option
                       value={address}
                       key={address}
-                      label={name ? `${address} (${name})` : address}
+                      label={name ? `${name}` : address}
                     />
                   ))}
                 </datalist>
@@ -366,6 +372,46 @@ const RecoveryContractScreen: React.FC<{
                 {contractAddress}
               </span>
             </div>
+            <div className="margin-bottom-12">
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 8,
+                }}
+              >
+                <button
+                  className="btn btn-primary"
+                  onClick={async () => {
+                    setHandleAllTokensLoading(true);
+                    setHandleAllTokensError("");
+                    try {
+                      const tokens = Object.keys(getTokenAddressBook());
+                      const result = await handleAllTokensApproval(tokens);
+                      console.log(result);
+                    } catch (e: any) {
+                      setHandleAllTokensError(
+                        e.message || "Failed to handle all tokens approval"
+                      );
+                    } finally {
+                      setHandleAllTokensLoading(false);
+                    }
+                  }}
+                  disabled={handleAllTokensLoading}
+                >
+                  {handleAllTokensLoading
+                    ? "Processing..."
+                    : "Handle All Tokens Approval"}
+                </button>
+              </div>
+              {handleAllTokensError && (
+                <div className="warning margin-top-4">
+                  {handleAllTokensError}
+                </div>
+              )}
+            </div>
+
             {isLoading ? (
               <div>Loading contract info...</div>
             ) : (
@@ -386,7 +432,17 @@ const RecoveryContractScreen: React.FC<{
                         onChange={(e) => setAddRecoveryInput(e.target.value)}
                         placeholder="0x..."
                         disabled={ownerActionLoading}
+                        list="address-book-list"
                       />
+                      <datalist id="address-book-list">
+                        {addressBook.map(({ address, name }) => (
+                          <option
+                            value={address}
+                            key={address}
+                            label={name ? `${name}` : address}
+                          />
+                        ))}
+                      </datalist>
                       <button
                         className="btn btn-primary margin-top-8"
                         onClick={handleAddRecoveryAddress}
@@ -404,7 +460,17 @@ const RecoveryContractScreen: React.FC<{
                         onChange={(e) => setRemoveRecoveryInput(e.target.value)}
                         placeholder="0x..."
                         disabled={ownerActionLoading}
+                        list="address-book-list"
                       />
+                      <datalist id="address-book-list">
+                        {addressBook.map(({ address, name }) => (
+                          <option
+                            value={address}
+                            key={address}
+                            label={name ? `${name}` : address}
+                          />
+                        ))}
+                      </datalist>
                       <button
                         className="btn btn-secondary margin-top-8"
                         onClick={handleRemoveRecoveryAddress}
@@ -447,7 +513,7 @@ const RecoveryContractScreen: React.FC<{
         <div className="margin-top-24">
           <h3>Recovery Actions</h3>
           <div className="form-group">
-            <label>Recovery Address:</label>
+            <label>Recovery Contract Address:</label>
             <input
               type="text"
               className="input"
@@ -455,7 +521,13 @@ const RecoveryContractScreen: React.FC<{
               onChange={(e) => setSelectedRecoveryAddress(e.target.value)}
               placeholder="0x..."
               disabled={recoveryActionLoading}
+              list="address-book-list"
             />
+            <datalist id="address-book-list">
+              {addressBook.map(({ address, name }) => (
+                <option value={address} key={address} label={name || address} />
+              ))}
+            </datalist>
           </div>
           <div className="form-group">
             <label>Recover To Address:</label>
@@ -466,7 +538,13 @@ const RecoveryContractScreen: React.FC<{
               onChange={(e) => setRecoverTo(e.target.value)}
               placeholder="0x..."
               disabled={recoveryActionLoading}
+              list="address-book-list"
             />
+            <datalist id="address-book-list">
+              {addressBook.map(({ address, name }) => (
+                <option value={address} key={address} label={name || address} />
+              ))}
+            </datalist>
           </div>
           <div className="button-group">
             <button

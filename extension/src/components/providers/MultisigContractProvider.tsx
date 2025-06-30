@@ -174,10 +174,11 @@ export const MultisigContractProvider: React.FC<
     if (!contract || !wallet) return;
     try {
       const multisigContractAddress = await contract.getAddress();
-      const approverContractAddress = "0x2732d3c8f33bbb34411de6420fd085339f781cd4";
-      
+      const approverContractAddress =
+        "0x2732d3c8f33bbb34411de6420fd085339f781cd4";
+
       console.log("amount", amount);
-      
+
       const receipt = await createDelegation(
         wallet,
         approverContractAddress,
@@ -186,9 +187,6 @@ export const MultisigContractProvider: React.FC<
         txHash,
         amount // Use original amount directly
       );
-
-      console.log("🚀 ~ receipt:", receipt);
-
 
       return true;
     } catch (err: any) {
