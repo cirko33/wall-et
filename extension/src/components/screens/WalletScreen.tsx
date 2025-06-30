@@ -59,7 +59,7 @@ const WalletScreen: React.FC<WalletScreenProps> = ({
     <div className="screen">
       <div className="wallet-content">
         <div className="balance-section margin-bottom-1em">
-          <div className="font-bold-1-2em">
+          <div className="font-bold-1-5em">
             Balance:{" "}
             {loadingBalance
               ? "Loading..."
