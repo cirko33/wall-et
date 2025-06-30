@@ -268,7 +268,10 @@ const MultisigInteractScreen: React.FC<MultisigInteractScreenProps> = ({
         }
       }
       if (depositType === "native") {
-        await depositNative(depositTxId, ethers.parseEther(depositValue));
+        const depositResult = await depositNative(depositTxId, ethers.parseEther(depositValue));
+        if (!depositResult) {
+          throw new Error("Native deposit failed");
+        }
         onMultisigTransactionSuccess({
           transactionType: "deposit",
           txHash: depositTxId,
@@ -283,11 +286,14 @@ const MultisigInteractScreen: React.FC<MultisigInteractScreenProps> = ({
         });
       } else {
         if (!depositTokenAddress) return setError("Token address required");
-        await depositToken(
+        const depositResult = await depositToken(
           depositTxId,
           depositTokenAddress,
           ethers.parseEther(depositValue)
         );
+        if (!depositResult) {
+          throw new Error("Token deposit failed");
+        }
         onMultisigTransactionSuccess({
           transactionType: "deposit",
           txHash: depositTxId,
@@ -327,7 +333,12 @@ const MultisigInteractScreen: React.FC<MultisigInteractScreenProps> = ({
           throw new Error("Invalid transaction ID");
         }
       }
-      await sign(txId);
+      
+      const signResult = await sign(txId);
+      if (!signResult) {
+        throw new Error("Transaction signing failed");
+      }
+      
       onMultisigTransactionSuccess({
         transactionType: "sign",
         txHash: txId,
@@ -367,7 +378,12 @@ const MultisigInteractScreen: React.FC<MultisigInteractScreenProps> = ({
           throw new Error("Invalid transaction ID");
         }
       }
-      await execute(txId);
+      
+      const executeResult = await execute(txId);
+      if (!executeResult) {
+        throw new Error("Transaction execution failed");
+      }
+      
       onMultisigTransactionSuccess({
         transactionType: "execute",
         txHash: txId,

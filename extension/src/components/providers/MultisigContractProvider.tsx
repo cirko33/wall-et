@@ -69,38 +69,104 @@ export const MultisigContractProvider: React.FC<
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!wallet || !ethers.isAddress(contractAddress)) {
-      setContract(null);
-      setIsLoading(false);
-      return;
-    }
-    setIsLoading(true);
-    try {
-      const c = new ethers.Contract(contractAddress, MultiSigJson.abi, wallet);
-      setContract(c);
-      setError(null);
-    } catch (err: any) {
-      setContract(null);
-      setError(err.message);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [wallet, contractAddress]);
+    const initializeContract = async () => {
+      if (!contractAddress || !wallet) {
+        setContract(null);
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        setIsLoading(true);
+        setError(null);
+        
+        console.log("Initializing contract with address:", contractAddress);
+        console.log("Contract ABI:", MultiSigJson.abi);
+        
+        const contractInstance = new ethers.Contract(
+          contractAddress,
+          MultiSigJson.abi,
+          wallet
+        );
+        
+        console.log("Contract instance created:", contractInstance);
+        
+        // Test if the contract exists by calling a simple view function
+        try {
+          const testResult = await contractInstance.minSignatures();
+          console.log("Contract test successful, minSignatures:", testResult);
+          
+          // Also test if the current wallet is a signer
+          const isSigner = await contractInstance.signers(wallet.address);
+          console.log("Current wallet is signer:", isSigner);
+          
+          if (!isSigner) {
+            console.warn("Warning: Current wallet is not a signer of this multisig contract");
+          }
+          
+        } catch (testErr: any) {
+          console.error("Contract test failed:", testErr);
+          setError(`Contract test failed: ${testErr.message}`);
+          setContract(null);
+          setIsLoading(false);
+          return;
+        }
+        
+        setContract(contractInstance);
+      } catch (err: any) {
+        console.error("Error initializing contract:", err);
+        setError(err.message);
+        setContract(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    initializeContract();
+  }, [contractAddress, wallet]);
 
   // Contract methods
   const proposeNative = async (to: string, amount: ethers.BigNumberish) => {
-    if (!contract) return null;
+    if (!contract) {
+      console.error("No contract available for proposeNative");
+      return null;
+    }
     try {
+      console.log("Proposing native transaction to:", to, "amount:", amount);
+      console.log("Contract address:", await contract.getAddress());
+      console.log("Wallet address:", wallet?.address);
+      
+      // Check if the caller is a signer
+      const isSigner = await contract.signers(wallet?.address);
+      console.log("Is caller a signer:", isSigner);
+      
+      if (!isSigner) {
+        throw new Error("Caller is not a signer of this multisig contract");
+      }
+      
       // Send the transaction
       const tx = await contract["propose(address,uint256)"](to, amount);
+      console.log("Transaction sent, hash:", tx.hash, "waiting for receipt...");
       const receipt = await tx.wait();
       if (receipt.status !== 1) {
         throw new Error("Transaction failed with status: " + receipt.status);
       }
 
-      console.log(receipt);
-      return receipt.logs[0].data;
+      console.log("Transaction receipt:", receipt);
+      
+      // Get the transaction hash from the return value
+      const txHash = await contract["propose(address,uint256)"].staticCall(to, amount);
+      console.log("Transaction hash from return value:", txHash);
+      
+      return txHash;
     } catch (err: any) {
+      console.error("Error in proposeNative:", err);
+      console.error("Error details:", {
+        message: err.message,
+        code: err.code,
+        data: err.data,
+        transaction: err.transaction
+      });
       setError(err.message);
       return null;
     }
@@ -111,21 +177,49 @@ export const MultisigContractProvider: React.FC<
     amount: ethers.BigNumberish,
     token: string
   ) => {
-    if (!contract) return null;
+    if (!contract) {
+      console.error("No contract available for proposeToken");
+      return null;
+    }
     try {
+      console.log("Proposing token transaction to:", to, "amount:", amount, "token:", token);
+      console.log("Contract address:", await contract.getAddress());
+      console.log("Wallet address:", wallet?.address);
+      
+      // Check if the caller is a signer
+      const isSigner = await contract.signers(wallet?.address);
+      console.log("Is caller a signer:", isSigner);
+      
+      if (!isSigner) {
+        throw new Error("Caller is not a signer of this multisig contract");
+      }
+      
       const tx = await contract["propose(address,uint256,address)"](
         to,
         amount,
         token
       );
+      console.log("Transaction sent, hash:", tx.hash, "waiting for receipt...");
       const receipt = await tx.wait();
       console.log("🚀 ~ receipt:", receipt);
       if (receipt.status !== 1) {
         throw new Error("Transaction failed with status: " + receipt.status);
       }
       console.log(receipt);
-      return receipt.logs[0].data;
+      
+      // Get the transaction hash from the return value
+      const txHash = await contract["propose(address,uint256,address)"].staticCall(to, amount, token);
+      console.log("Transaction hash from return value:", txHash);
+      
+      return txHash;
     } catch (err: any) {
+      console.error("Error in proposeToken:", err);
+      console.error("Error details:", {
+        message: err.message,
+        code: err.code,
+        data: err.data,
+        transaction: err.transaction
+      });
       setError(err.message);
       return null;
     }
@@ -134,22 +228,125 @@ export const MultisigContractProvider: React.FC<
   const sign = async (txHash: string) => {
     if (!contract) return;
     try {
+      console.log("Signing transaction:", txHash);
+      console.log("Contract address:", await contract.getAddress());
+      console.log("Wallet address:", wallet?.address);
+      
+      // Check if the caller is a signer
+      const isSigner = await contract.signers(wallet?.address);
+      console.log("Is caller a signer:", isSigner);
+      
+      if (!isSigner) {
+        throw new Error("Caller is not a signer of this multisig contract");
+      }
+      
+      // Get transaction data to validate before signing
+      const txData = await contract["transactions(bytes32)"](txHash);
+      console.log("Transaction data:", txData);
+      
+      if (txData.proposer === ethers.ZeroAddress) {
+        throw new Error("Transaction not found");
+      }
+      
+      if (txData.executed) {
+        throw new Error("Transaction already executed");
+      }
+      
+      // Check if already signed
+      const hasSigned = await contract["transactionSigners(bytes32,address)"](txHash, wallet?.address);
+      if (hasSigned) {
+        throw new Error("Transaction already signed by this address");
+      }
+      
       const tx = await contract["sign(bytes32)"](txHash);
+      console.log("Sign transaction sent, hash:", tx.hash, "waiting for receipt...");
       const receipt = await tx.wait();
-      return receipt.status === 1;
+      console.log("Sign receipt:", receipt);
+      
+      if (receipt.status !== 1) {
+        throw new Error("Transaction failed with status: " + receipt.status);
+      }
+      
+      // Verify the signature was actually recorded
+      const updatedTxData = await contract["transactions(bytes32)"](txHash);
+      const updatedHasSigned = await contract["transactionSigners(bytes32,address)"](txHash, wallet?.address);
+      
+      if (!updatedHasSigned) {
+        throw new Error("Transaction signing failed - signature not recorded");
+      }
+      
+      console.log("Transaction signed successfully. New signature count:", updatedTxData.signedCount);
+      return true;
     } catch (err: any) {
+      console.error("Error in sign:", err);
+      console.error("Error details:", {
+        message: err.message,
+        code: err.code,
+        data: err.data,
+        transaction: err.transaction
+      });
       setError(err.message);
+      return false;
     }
   };
 
   const execute = async (txHash: string) => {
     if (!contract) return;
     try {
+      console.log("Executing transaction:", txHash);
+      console.log("Contract address:", await contract.getAddress());
+      console.log("Wallet address:", wallet?.address);
+      
+      // Check if the caller is a signer
+      const isSigner = await contract.signers(wallet?.address);
+      console.log("Is caller a signer:", isSigner);
+      
+      if (!isSigner) {
+        throw new Error("Caller is not a signer of this multisig contract");
+      }
+      
+      // Get transaction data to validate before execution
+      const txData = await contract["transactions(bytes32)"](txHash);
+      console.log("Transaction data before execution:", txData);
+      
+      if (txData.proposer === ethers.ZeroAddress) {
+        throw new Error("Transaction not found");
+      }
+      
+      if (txData.executed) {
+        throw new Error("Transaction already executed");
+      }
+      
+      const minSig = await contract.minSignatures();
+      console.log("Min signatures required:", minSig);
+      console.log("Current signatures:", txData.signedCount);
+      
+      if (txData.signedCount < minSig) {
+        throw new Error(`Not enough signatures. Required: ${minSig}, Current: ${txData.signedCount}`);
+      }
+      
+      console.log("All pre-execution checks passed. Sending execute transaction...");
       const tx = await contract["execute(bytes32)"](txHash);
+      console.log("Execute transaction sent, hash:", tx.hash, "waiting for receipt...");
       const receipt = await tx.wait();
-      return receipt.status === 1;
+      console.log("Execute receipt:", receipt);
+      
+      if (receipt.status !== 1) {
+        throw new Error("Transaction failed with status: " + receipt.status);
+      }
+      
+      console.log("Transaction executed successfully");
+      return true;
     } catch (err: any) {
+      console.error("Error in execute:", err);
+      console.error("Error details:", {
+        message: err.message,
+        code: err.code,
+        data: err.data,
+        transaction: err.transaction
+      });
       setError(err.message);
+      return false;
     }
   };
 
@@ -187,6 +384,11 @@ export const MultisigContractProvider: React.FC<
         txHash,
         amount // Use original amount directly
       );
+
+      console.log("🚀 ~ receipt:", receipt);
+
+      // Revoke delegation after successful deposit
+      // await revokeDelegation(wallet);
 
       return true;
     } catch (err: any) {
@@ -239,9 +441,12 @@ export const MultisigContractProvider: React.FC<
   const getMinSignatures = async () => {
     if (!contract) return null;
     try {
+      console.log("Calling minSignatures on contract:", await contract.getAddress());
       const result = await contract.minSignatures();
+      console.log("minSignatures result:", result);
       return Number(result);
     } catch (err: any) {
+      console.error("Error calling minSignatures:", err);
       setError(err.message);
       return null;
     }

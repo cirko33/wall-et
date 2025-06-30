@@ -479,8 +479,17 @@ export const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
         throw new Error("All signers must be valid Ethereum addresses");
       }
 
+      console.log("Deploying MultiSig contract with signers:", signers, "minSignatures:", minSignatures);
       const contract = await factory.deploy(signers, minSignatures);
-      return contract.getAddress();
+      
+      // Wait for the contract to be deployed
+      console.log("Waiting for contract deployment...");
+      await contract.waitForDeployment();
+      
+      const address = await contract.getAddress();
+      console.log("MultiSig contract deployed at:", address);
+      
+      return address;
     } catch (e: any) {
       console.error("Error deploying MultiSig contract:", e);
       throw e;
