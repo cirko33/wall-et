@@ -378,30 +378,38 @@ const MultisigScreen: React.FC<MultisigScreenProps> = ({
         {savedMultisigs.length > 0 && (
           <div className="saved-multisigs margin-bottom-24">
             <h4>Saved MultiSig Contracts</h4>
-            <ul className="padding-left-16">
+            <div className="multisig-contracts-list">
               {savedMultisigs.map((addr, idx) => (
-                <li
+                <div
                   key={addr}
-                  className="font-monospace-14 flex-align-center-gap-8"
+                  className="multisig-contract-card"
+                  onClick={() => onOpenMultisigInteract(addr)}
+                  title="Click to open multisig contract"
                 >
-                  <span
-                    className="cursor-pointer"
-                    title="Open multisig"
-                    onClick={() => onOpenMultisigInteract(addr)}
-                  >
-                    {idx + 1}. {addr}
-                  </span>
-                  <button
-                    type="button"
-                    className="btn-icon color-c00 margin-left-8"
-                    title="Remove from saved"
-                    onClick={() => handleRemoveSavedMultisig(addr)}
-                  >
-                    🗑️
-                  </button>
-                </li>
+                  <div className="multisig-contract-info">
+                    <span className="multisig-contract-number">
+                      Contract #{idx + 1}
+                    </span>
+                    <span className="multisig-contract-address">
+                      {addr}
+                    </span>
+                  </div>
+                  <div className="multisig-contract-actions">
+                    <button
+                      type="button"
+                      className="multisig-delete-btn"
+                      title="Remove from saved"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleRemoveSavedMultisig(addr);
+                      }}
+                    >
+                      🗑️
+                    </button>
+                  </div>
+                </div>
               ))}
-            </ul>
+            </div>
           </div>
         )}
       </div>
