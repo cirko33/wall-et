@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.2 <0.9.0;
 
-import "../lib/forge-std/src/Test.sol";
-import "../src/SocialRecovery.sol";
-import "../lib/openzeppelin-contracts/contracts/mocks/token/ERC20Mock.sol";
+import "forge-std/Test.sol";
+import "../src/contracts/SocialRecovery.sol";
+import "@openzeppelin/contracts/mocks/token/ERC20Mock.sol";
 
 contract SocialRecoveryTest is Test {
     SocialRecovery public recovery;

@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.8.2 <0.9.0;
 
-import "../lib/forge-std/src/Test.sol";
-import "../src/MultiSig.sol";
-import "../lib/openzeppelin-contracts/contracts/mocks/token/ERC20Mock.sol";
+import "forge-std/Test.sol";
+import "../src/contracts/MultiSig.sol";
+import "@openzeppelin/contracts/mocks/token/ERC20Mock.sol";
 
 contract MultiSigTest is Test {
     MultiSig public multiSig;

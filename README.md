@@ -1,146 +1,63 @@
-# WALL-ET Ethereum Wallet Extension
+# WALL-ET Ethereum Wallet Extension 🤖✨
 
-<img src=".assets/wall-et.png" width=300 />
+WALL-ET is a secure, user-friendly Ethereum wallet browser extension for all Chromium-based browsers (Chrome, Brave, Edge, etc.), designed for the Sepolia testnet. It enables you to generate or import wallets, manage your ETH, and send transactions—all within your browser, with your private keys stored locally.
 
-A secure Ethereum wallet extension for Brave browser with Sepolia testnet support.
+---
 
-## Features
+## 🚀 Features
 
-- 🔐 **Secure Local Storage**: Private keys stored locally in browser storage
-- 🆕 **Wallet Generation**: Create new Ethereum wallets with random private keys
-- 📥 **Import Existing**: Import wallets using private keys
-- 💸 **Send Transactions**: Send ETH transactions on Sepolia testnet
-- 🎨 **Modern UI**: Beautiful, responsive interface
-- 🔒 **Privacy Focused**: No data sent to external servers
+- 🆕 **Wallet Management**: Generate new Ethereum wallets or import existing ones using private keys.
+- 💸 **Send ETH**: Transfer Sepolia testnet ETH to any address.
+- 👀 **Balance Display**: View your current ETH balance in real time.
+- ✅ **Transaction Confirmation**: Review and confirm all outgoing transactions.
+- 🎨 **Modern UI**: Clean, responsive, and intuitive interface.
+- 🔒 **Privacy & Security**: Private keys are stored locally in your browser; no data is sent to external servers.
+- 🛡️ **EIP-7702 Support**: Experience the latest Ethereum account abstraction standard (EIP-7702) for enhanced security and flexibility.
+- 🤝 **Multisignature Contract**: Secure your assets with multisig—transactions require approval from multiple parties.
+- 🆘 **Social Recovery**: Recover your wallet access through trusted contacts if you lose your private key.
 
-## Installation
+---
 
-### For Brave Browser
+## 🛠️ Installation
 
-1. **Download the Extension**
+1. **Clone or download** this repository.
+2. Open your Chromium browser and go to the extensions page:
+   - Chrome: `chrome://extensions/`
+   - Brave: `brave://extensions/`
+   - Edge: `edge://extensions/`
+3. Enable **Developer mode** (toggle in the top right).
+4. Click **Load unpacked** and select the `extension` folder.
+5. 📌 Pin the extension for easy access.
 
-   - Clone or download this repository
-   - Ensure all files are in the same directory
+---
 
-2. **Load Extension in Brave**
+## 🏁 Getting Started
 
-   - Open Brave browser
-   - Go to `brave://extensions/`
-   - Enable "Developer mode" (toggle in top right)
-   - Click "Load unpacked"
-   - Select the folder containing the extension files
+- 🚦 **First Use**: Click the extension icon and choose to generate a new wallet or import an existing one.
+- 🛡️ **Generating a Wallet**: Save your private key securely—you will not be able to view it again!
+- 🔑 **Importing a Wallet**: Enter your 64-character private key (with or without `0x` prefix).
+- 📤 **Sending ETH**: Enter the recipient address, amount, and confirm the transaction.
+- 🤝 **Using Multisig**: Set up a multisignature wallet for shared control and approvals.
+- 🆘 **Social Recovery**: Configure trusted contacts to help you recover your wallet if needed.
 
-3. **Verify Installation**
-   - The WALL-E icon should appear in your browser toolbar
-   - Click the icon to open the wallet
+---
 
-## Usage
+## 🌐 Network
 
-### First Time Setup
+- 🧪 **Testnet**: Sepolia only (Chain ID: 11155111)
+- ⛽ **Faucets**: Get test ETH from [Sepolia Faucet](https://sepoliafaucet.com/) or [Alchemy Faucet](https://sepoliafaucet.com/).
 
-1. **Choose Your Option**
+---
 
-   - **Import Private Key**: If you have an existing wallet
-   - **Generate New Wallet**: To create a fresh wallet
+## ⚠️ Security Notes
 
-2. **For New Wallets**
+- 🚫 **Testnet Only**: Do not use for mainnet or real funds.
+- 🗝️ **Local Storage**: Private keys are stored unencrypted in your browser—secure your device.
+- 📚 **Educational Use**: This extension is for demo and educational purposes only.
 
-   - Click "Generate New Wallet"
-   - **IMPORTANT**: Save your private key securely - you won't see it again!
-   - Copy both address and private key to a secure location
+---
 
-3. **For Existing Wallets**
-   - Click "Import Private Key"
-   - Enter your 64-character private key (with or without 0x prefix)
+## 🤝 Contributing & License
 
-### Sending Transactions
-
-1. **Get Sepolia ETH**
-
-   - Visit [Sepolia Faucet](https://sepoliafaucet.com/) to get test ETH
-   - Or use [Alchemy Sepolia Faucet](https://sepoliafaucet.com/)
-
-2. **Send Transaction**
-   - Enter recipient address
-   - Specify amount in ETH
-   - Set gas price (default: 20 Gwei)
-   - Click "Send Transaction"
-
-## Security Notes
-
-⚠️ **Important Security Warnings**:
-
-- This is a **testnet wallet** - only use with Sepolia testnet
-- Private keys are stored **unencrypted** in browser storage
-- **Never** use this for mainnet or real funds
-- Always backup your private key securely
-- This extension is for educational/demo purposes
-
-## File Structure
-
-```
-wall-e/
-├── manifest.json          # Extension configuration
-├── popup.html            # Main wallet interface
-├── popup.js              # Wallet functionality
-├── styles.css            # UI styling
-├── background.js         # Background service worker
-├── content.js            # Content script
-├── ethers.min.js         # Ethereum library
-├── icons/                # Extension icons
-└── README.md             # This file
-```
-
-## Development
-
-### Prerequisites
-
-- Brave browser
-- Basic knowledge of Ethereum and browser extensions
-
-### Customization
-
-- Modify `styles.css` for UI changes
-- Update `popup.js` for wallet functionality
-- Edit `manifest.json` for permissions and settings
-
-### Testing
-
-- Use Sepolia testnet for all transactions
-- Test with small amounts first
-- Verify transactions on [Sepolia Etherscan](https://sepolia.etherscan.io/)
-
-## Troubleshooting
-
-### Common Issues
-
-1. **Extension won't load**
-
-   - Ensure all files are present
-   - Check browser console for errors
-   - Verify manifest.json syntax
-
-2. **Transactions fail**
-
-   - Check Sepolia network connection
-   - Ensure sufficient test ETH balance
-   - Verify recipient address format
-
-3. **Private key import fails**
-   - Ensure 64-character hexadecimal format
-   - Add 0x prefix if missing
-   - Check for extra spaces or characters
-
-### Getting Help
-
-- Check browser console for error messages
-- Verify network connectivity
-- Ensure you're using Sepolia testnet addresses
-
-## License
-
-This project is for educational purposes. Use at your own risk.
-
-## Disclaimer
-
-This extension is provided as-is for educational and testing purposes. It is not intended for production use or handling real funds. Always use proper security measures when dealing with cryptocurrency wallets.
+- 🙌 Contributions are welcome! See the code for areas to improve (UI, security, features).
+- 📄 Licensed for educational use. Use at your own risk.

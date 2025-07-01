@@ -16,7 +16,7 @@ dev:
 PHONY: build
 build: 
 	make build-contracts
-	for i in contracts/src/*.sol; do \
+	for i in contracts/src/contracts/*.sol; do \
 		name=$$(basename $$i .sol); \
 		echo $$name; \
 		cp contracts/out/$$name.sol/$$name.json extension/contracts/$$name.json; \
@@ -55,3 +55,7 @@ propose:
 PHONY: get-transaction
 get-transaction:
 	cd contracts && cast call $(MULTISIG_CONTRACT_ADDRESS) "function getTransaction(bytes32)(bytes32,address,uint256,uint256)" $(TX_HASH) --private-key $(PRIVATE_KEY) --rpc-url https://sepolia.infura.io/v3/7a796da878ac4152a6b3bfcb4fc794cb
+
+PHONY: test
+test: 
+	cd contracts && forge test -vvv
